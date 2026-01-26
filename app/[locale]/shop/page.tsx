@@ -141,6 +141,7 @@ export default function ProductsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories(prev =>
