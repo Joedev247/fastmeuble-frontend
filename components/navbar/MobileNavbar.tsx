@@ -33,7 +33,7 @@ export default function MobileNavbar() {
           </div>
           <div className="col-6 header-right flex justify-end items-center gap-3">
             <LanguageSwitcher />
-            <Cart cartCount={0} />
+            <Cart />
             <button
               type="button"
               id="show-megamenu"
