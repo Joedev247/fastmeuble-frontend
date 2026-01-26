@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "shop": "Boutique",
+    "blog": "Blog",
+    "vendors": "Vendeurs",
+    "page": "Page",
+    "menu": "Menu",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "login": "Connexion",
+    "signIn": "Se connecter",
+    "createAccount": "Créer un compte",
+    "lostPassword": "Mot de passe oublié?",
+    "rememberMe": "Se souvenir de moi",
+    "allCategory": "Toutes les catégories",
+    "viewCart": "Voir votre panier",
+    "noProductsInCart": "Aucun produit dans le panier.",
+    "emptyCart": "Aucun produit dans le panier.",
+    "myAccount": "Mon compte",
+    "wishlist": "Liste de souhaits",
+    "shopPage": "Boutique"
+  },
+  "shop": {
+    "shopLayout": "Mise en page de la boutique",
+    "productLayout": "Mise en page du produit",
+    "productImage": "Image du produit",
+    "productsType": "Types de produits",
+    "productExtended": "Produit étendu"
+  },
+  "page": {
+    "about": "À propos",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "page404": "Page 404"
+  },
+  "vendors": {
+    "storeListing": "Liste des magasins de vendeurs",
+    "storeDetails": "Détails du magasin"
+  }
+}

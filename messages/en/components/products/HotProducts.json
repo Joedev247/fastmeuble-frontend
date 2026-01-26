@@ -1,0 +1,94 @@
+{
+  "tabs": {
+    "latest": "RECENT WORKS",
+    "topRating": "FEATURED",
+    "bestSellers": "POPULAR"
+  },
+  "allProducts": "View All Works",
+  "badges": {
+    "hot": "HOT"
+  },
+  "review": "review",
+  "reviews": "reviews",
+  "products": [
+    {
+      "id": "1",
+      "name": "Chair Padded Seat",
+      "image": "/images/category-1.jpg",
+      "price": "$100.00",
+      "rating": 4.5,
+      "reviews": 2,
+      "link": "/shop/chair-padded-seat"
+    },
+    {
+      "id": "2",
+      "name": "Beam Decatur",
+      "image": "/images/category-2.jpg",
+      "price": "$30.51",
+      "rating": 0,
+      "reviews": 0,
+      "link": "/shop/beam-decatur"
+    },
+    {
+      "id": "3",
+      "name": "Briarwood Decorative",
+      "image": "/images/category-3.jpg",
+      "price": "$20.00",
+      "rating": 0,
+      "reviews": 0,
+      "link": "/shop/briarwood-decorative"
+    },
+    {
+      "id": "4",
+      "name": "Ceramic Canister",
+      "image": "/images/discount-1.jpg",
+      "price": "$27.00",
+      "originalPrice": "$30.51",
+      "rating": 0,
+      "reviews": 0,
+      "discount": "12%",
+      "link": "/shop/ceramic-canister"
+    },
+    {
+      "id": "5",
+      "name": "Aqua Globes",
+      "image": "/images/discount-2.jpg",
+      "price": "$25.00 - $30.00",
+      "rating": 0,
+      "reviews": 0,
+      "isHot": true,
+      "link": "/shop/aqua-globes"
+    },
+    {
+      "id": "6",
+      "name": "CWI Gifts Wood",
+      "image": "/images/slider5-1.jpg",
+      "price": "$21.00",
+      "originalPrice": "$30.51",
+      "rating": 0,
+      "reviews": 0,
+      "discount": "31%",
+      "link": "/shop/cwi-gifts-wood"
+    },
+    {
+      "id": "7",
+      "name": "Alarm Clock",
+      "image": "/images/slider5-2.jpg",
+      "price": "$259.00",
+      "rating": 0,
+      "reviews": 0,
+      "isHot": true,
+      "link": "/shop/alarm-clock"
+    },
+    {
+      "id": "8",
+      "name": "Casper Sleep Pillow",
+      "image": "/images/slider5-3.jpg",
+      "price": "$287.00",
+      "rating": 4.5,
+      "reviews": 1,
+      "isHot": true,
+      "link": "/shop/casper-sleep-pillow"
+    }
+  ]
+}

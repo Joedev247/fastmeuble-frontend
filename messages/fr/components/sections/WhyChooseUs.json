@@ -1,0 +1,31 @@
+{
+  "subtitle": "POURQUOI NOUS CHOISIR",
+  "title": "Ce Qui Nous Rend Différents",
+  "description": "Chez Fast Meuble, nous combinons l'artisanat traditionnel avec le design moderne pour créer des meubles qui vous sont uniques.",
+  "features": [
+    {
+      "id": "1",
+      "icon": "tools",
+      "title": "Sur Mesure",
+      "description": "Chaque pièce est fabriquée selon vos spécifications et préférences exactes."
+    },
+    {
+      "id": "2",
+      "icon": "hand",
+      "title": "Excellence Artisanale",
+      "description": "Des artisans qualifiés donnent vie à votre vision avec attention aux détails."
+    },
+    {
+      "id": "3",
+      "icon": "clock",
+      "title": "Fait sur Commande",
+      "description": "Nous travaillons sur commande, garantissant que chaque pièce répond à vos besoins uniques."
+    },
+    {
+      "id": "4",
+      "icon": "award",
+      "title": "Qualité Garantie",
+      "description": "Matériaux premium et savoir-faire qui résistent à l'épreuve du temps."
+    }
+  ]
+}

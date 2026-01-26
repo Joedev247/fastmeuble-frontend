@@ -1,0 +1,40 @@
+{
+  "designed": "DESIGNED",
+  "brand": "BRAND",
+  "color": "COLOR",
+  "size": "SIZE",
+  "quantity": "QUANTITY",
+  "addToCart": "ADD TO CART",
+  "product": {
+    "id": "1",
+    "image": "/images/category-1.jpg",
+    "designedYear": "2015",
+    "name": "Aqua Globes",
+    "price": "$25.00 - $30.00",
+    "brand": {
+      "name": "FURNITURE",
+      "logo": "/images/brand-logo.png"
+    },
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.",
+    "colors": [
+      {
+        "name": "Blue",
+        "value": "#4A90E2"
+      },
+      {
+        "name": "Orange",
+        "value": "#F97316"
+      },
+      {
+        "name": "Green",
+        "value": "#10B981"
+      },
+      {
+        "name": "Gray",
+        "value": "#9CA3AF"
+      }
+    ],
+    "sizes": ["S", "M", "L", "XL"],
+    "bestSellerYear": "2020"
+  }
+}

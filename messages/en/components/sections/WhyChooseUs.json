@@ -1,0 +1,31 @@
+{
+  "subtitle": "WHY CHOOSE US",
+  "title": "What Makes Us Different",
+  "description": "At Fast Meuble, we combine traditional craftsmanship with modern design to create furniture that's uniquely yours.",
+  "features": [
+    {
+      "id": "1",
+      "icon": "tools",
+      "title": "Custom Made",
+      "description": "Every piece is crafted to your exact specifications and preferences."
+    },
+    {
+      "id": "2",
+      "icon": "hand",
+      "title": "Handcrafted Excellence",
+      "description": "Skilled artisans bring your vision to life with attention to detail."
+    },
+    {
+      "id": "3",
+      "icon": "clock",
+      "title": "Made to Order",
+      "description": "We work on command, ensuring each piece meets your unique needs."
+    },
+    {
+      "id": "4",
+      "icon": "award",
+      "title": "Quality Guaranteed",
+      "description": "Premium materials and craftsmanship that stands the test of time."
+    }
+  ]
+}

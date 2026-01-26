@@ -1,0 +1,19 @@
+{
+  "data": {
+    "title": "Contactez-nous",
+    "subtitle": "NOUS CONTACTER",
+    "description": "Vous avez un projet en tête? Nous travaillons sur commande pour donner vie à votre vision. Contactez-nous pour discuter de vos besoins en mobilier sur mesure.",
+    "location": "Bepanda, Douala - Cameroun",
+    "address": "Bepanda, Douala, Cameroun",
+    "phone": "+237 XXX XXX XXX",
+    "email": "info@fastmeuble.com",
+    "hours": "Lun - Sam: 8h00 - 18h00",
+    "formTitle": "Envoyez-nous un message",
+    "formSubtitle": "Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.",
+    "nameLabel": "Votre nom",
+    "emailLabel": "Votre email",
+    "phoneLabel": "Votre téléphone",
+    "messageLabel": "Votre message",
+    "submitButton": "Envoyer le message"
+  }
+}

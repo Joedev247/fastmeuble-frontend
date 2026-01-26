@@ -1,0 +1,10 @@
+{
+  "banner": {
+    "id": "1",
+    "image": "/images/slider5-2.jpg",
+    "title": "Salon Moderne",
+    "subtitle": "Créez votre espace parfait",
+    "buttonText": "Acheter Maintenant",
+    "link": "/shop/salon"
+  }
+}

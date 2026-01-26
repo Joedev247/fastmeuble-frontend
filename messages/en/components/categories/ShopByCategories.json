@@ -1,0 +1,28 @@
+{
+  "title": {
+    "line1": "Our",
+    "line2": "shop"
+  },
+  "stats": "50 +<br>Completed Projects",
+  "buttonText": "VIEW ALL WORKS",
+  "categories": [
+    {
+      "id": "1",
+      "name": "Dining Chairs",
+      "slug": "dining-chairs",
+      "image": "/images/category-1.jpg"
+    },
+    {
+      "id": "2",
+      "name": "Sofas",
+      "slug": "sofas",
+      "image": "/images/category-2.jpg"
+    },
+    {
+      "id": "3",
+      "name": "Tables",
+      "slug": "tables",
+      "image": "/images/category-3.jpg"
+    }
+  ]
+}

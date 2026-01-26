@@ -1,0 +1,10 @@
+{
+  "banner": {
+    "id": "1",
+    "image": "/images/goodvibes.jpg",
+    "title": "Modern Living Room",
+    "subtitle": "Create your perfect space",
+    "buttonText": "Shop Now",
+    "link": "/shop/living-room"
+  }
+}

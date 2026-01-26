@@ -1,0 +1,12 @@
+{
+  "data": {
+    "id": "1",
+    "subtitle": "NOS HISTOIRES",
+    "title": "Nous concevons tout ce que nous fabriquons.",
+    "description": "Chez Fast Meuble, nous nous spécialisons dans la création de meubles sur mesure adaptés à vos besoins uniques. Basés à Bepanda, Douala - Cameroun, nous travaillons sur commande pour donner vie à votre vision. Chaque pièce est fabriquée à la main avec attention aux détails et un savoir-faire de qualité.",
+    "buttonText": "À PROPOS DE NOUS",
+    "buttonLink": "/about",
+    "image": "/images/stories.jpg",
+    "brandText": "Fast Meuble"
+  }
+}

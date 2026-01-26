@@ -1,0 +1,20 @@
+{
+  "banners": [
+    {
+      "id": "1",
+      "discount": "30% DE RÉDUCTION SUR TOUTES LES COMMANDES",
+      "title": "Salon",
+      "buttonText": "Acheter maintenant",
+      "image": "/images/discount-1.jpg",
+      "link": "/shop/living-room"
+    },
+    {
+      "id": "2",
+      "discount": "30% DE RÉDUCTION SUR TOUTES LES COMMANDES",
+      "title": "Salle à Manger",
+      "buttonText": "Acheter maintenant",
+      "image": "/images/discount-2.jpg",
+      "link": "/shop/dining-room"
+    }
+  ]
+}

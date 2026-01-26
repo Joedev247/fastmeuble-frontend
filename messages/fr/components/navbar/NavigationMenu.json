@@ -1,0 +1,20 @@
+{
+  "home": "Accueil",
+  "shop": "Boutique",
+  "blog": "Blog",
+  "vendors": "Vendeurs",
+  "page": "Page",
+  "menu": "Menu",
+  "shopLayout": "Mise en page de la boutique",
+  "productLayout": "Mise en page du produit",
+  "productImage": "Image du produit",
+  "productsType": "Types de produits",
+  "productExtended": "Produit étendu",
+  "storeListing": "Liste des magasins de vendeurs",
+  "storeDetails": "Détails du magasin",
+  "about": "À propos",
+  "contact": "Contact",
+  "faq": "FAQ",
+  "page404": "Page 404",
+  "contentPlaceholder": "- Contenu placeholder"
+}

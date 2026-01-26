@@ -1,0 +1,19 @@
+{
+  "data": {
+    "title": "Get In Touch",
+    "subtitle": "CONTACT US",
+    "description": "Have a project in mind? We work on command to bring your vision to life. Get in touch with us to discuss your custom furniture needs.",
+    "location": "Bepanda, Douala - Cameroon",
+    "address": "Bepanda, Douala, Cameroon",
+    "phone": "+237 XXX XXX XXX",
+    "email": "info@fastmeuble.com",
+    "hours": "Mon - Sat: 8:00 AM - 6:00 PM",
+    "formTitle": "Send Us a Message",
+    "formSubtitle": "Fill out the form below and we'll get back to you as soon as possible.",
+    "nameLabel": "Your Name",
+    "emailLabel": "Your Email",
+    "phoneLabel": "Your Phone",
+    "messageLabel": "Your Message",
+    "submitButton": "Send Message"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "login": "Connexion",
+  "signUp": "S'inscrire",
+  "signIn": "Se connecter",
+  "createAccount": "Créer un compte",
+  "alreadyHaveAccount": "Vous avez déjà un compte? Connectez-vous",
+  "lostPassword": "Mot de passe oublié?",
+  "rememberMe": "Se souvenir de moi",
+  "close": "Fermer",
+  "usernamePlaceholder": "Votre nom",
+  "emailPlaceholder": "Votre email",
+  "passwordPlaceholder": "Mot de passe"
+}

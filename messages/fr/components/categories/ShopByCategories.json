@@ -1,0 +1,28 @@
+{
+  "title": {
+    "line1": "Magasiner",
+    "line2": "par catégories"
+  },
+  "stats": "50 +<br>Projets Terminés",
+  "buttonText": "TOUTES LES CATÉGORIES",
+  "categories": [
+    {
+      "id": "1",
+      "name": "Chaise à Manger",
+      "slug": "dining-chair",
+      "image": "/images/category-1.jpg"
+    },
+    {
+      "id": "2",
+      "name": "Canapés",
+      "slug": "sofas",
+      "image": "/images/category-2.jpg"
+    },
+    {
+      "id": "3",
+      "name": "Table",
+      "slug": "table",
+      "image": "/images/category-3.jpg"
+    }
+  ]
+}

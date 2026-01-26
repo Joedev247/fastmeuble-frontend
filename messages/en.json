@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "blog": "Blog",
+    "vendors": "Vendors",
+    "page": "Page",
+    "menu": "Menu",
+    "close": "Close",
+    "search": "Search",
+    "login": "Login",
+    "signIn": "Sign in",
+    "createAccount": "Create An Account",
+    "lostPassword": "Lost your password?",
+    "rememberMe": "Remember me",
+    "allCategory": "All Category",
+    "viewCart": "View your shopping cart",
+    "noProductsInCart": "No products in the cart.",
+    "emptyCart": "No products in the cart.",
+    "myAccount": "My Account",
+    "wishlist": "Wishlist",
+    "shopPage": "Shop"
+  },
+  "shop": {
+    "shopLayout": "Shop Layout",
+    "productLayout": "Product Layout",
+    "productImage": "Product image",
+    "productsType": "Products Type",
+    "productExtended": "Product Extended"
+  },
+  "page": {
+    "about": "About",
+    "contact": "Contact",
+    "faq": "Faq",
+    "page404": "Page 404"
+  },
+  "vendors": {
+    "storeListing": "Vendor Store Listing",
+    "storeDetails": "Store Details"
+  }
+}

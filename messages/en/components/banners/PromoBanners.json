@@ -1,0 +1,20 @@
+{
+  "banners": [
+    {
+      "id": "1",
+      "discount": "CUSTOM MADE",
+      "title": "Living Room",
+      "buttonText": "View Gallery",
+      "image": "/images/discount-1.jpg",
+      "link": "/shop/living-room"
+    },
+    {
+      "id": "2",
+      "discount": "HANDCRAFTED",
+      "title": "Dining Room",
+      "buttonText": "View Gallery",
+      "image": "/images/discount-2.jpg",
+      "link": "/shop/dining-room"
+    }
+  ]
+}
