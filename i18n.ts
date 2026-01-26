@@ -1,12 +1,12 @@
 import { getRequestConfig } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-export const locales = ['en', 'fr'] as const;
+export const locales = ['fr', 'en'] as const;
 export type Locale = (typeof locales)[number];
 
 export default getRequestConfig(async ({ locale: localeParam }) => {
   // `locale` can be undefined for certain internal Next.js requests; don't 404 the whole app.
-  const locale = ((localeParam ?? 'en') as Locale);
+  const locale = ((localeParam ?? 'fr') as Locale);
   if (!locales.includes(locale)) notFound();
 
   // Load base translations if exists
