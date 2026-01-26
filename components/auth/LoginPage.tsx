@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/lib/navigation';
 import Image from 'next/image';
-import { FaEye, FaEyeSlash, FaArrowLeft, FaGoogle } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
@@ -74,15 +74,14 @@ export default function LoginPage() {
                 alt="Fast Meuble"
                 width={150}
                 height={50}
-                className="h-auto max-h-12"
+                className="h-auto w-auto max-h-12"
                 priority
               />
             </Link>
             <Link 
               href="/" 
-              className="text-white/80 hover:text-white transition-colors text-sm font-medium flex items-center gap-2"
+              className="text-white/80 hover:text-white transition-colors text-sm font-medium"
             >
-              <FaArrowLeft size={12} />
               {t('backToWebsite')}
             </Link>
           </div>
@@ -110,7 +109,7 @@ export default function LoginPage() {
                 alt="Fast Meuble"
                 width={150}
                 height={50}
-                className="h-auto max-h-12"
+                className="h-auto w-auto max-h-12"
                 priority
               />
             </Link>
