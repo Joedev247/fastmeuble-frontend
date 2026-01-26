@@ -71,7 +71,7 @@ export function AdminSidebar() {
           <Link href="/admin" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="relative h-8 w-8 shrink-0">
               <Image
-                src="/images/fast-meuble-logo.jpg"
+                src="/images/fast-meuble-logo-removebg-preview.png"
                 alt="Fast Meuble"
                 fill
                 className="object-contain"

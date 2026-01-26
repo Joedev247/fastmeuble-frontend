@@ -21,7 +21,7 @@ export default function MobileNavbar() {
             <div className="wpbingoLogo">
               <Link href="/">
                 <Image
-                  src="/images/fast-meuble-logo.jpg"
+                  src="/images/fast-meuble-logo-removebg-preview.png"
                   alt="Fast Meuble"
                   width={120}
                   height={40}

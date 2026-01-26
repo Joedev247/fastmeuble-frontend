@@ -70,7 +70,7 @@ export default function LoginPage() {
           <div className="flex items-start justify-between">
             <Link href="/" className="flex items-center group hover:opacity-80 transition-opacity">
               <Image
-                src="/images/fast-meuble-logo.jpg"
+                src="/images/fast-meuble-logo-removebg-preview.png"
                 alt="Fast Meuble"
                 width={150}
                 height={50}
@@ -106,7 +106,7 @@ export default function LoginPage() {
           <div className="mb-6 lg:hidden flex justify-center">
             <Link href="/" className="hover:opacity-80 transition-opacity">
               <Image
-                src="/images/fast-meuble-logo.jpg"
+                src="/images/fast-meuble-logo-removebg-preview.png"
                 alt="Fast Meuble"
                 width={150}
                 height={50}

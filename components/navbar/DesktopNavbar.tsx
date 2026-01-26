@@ -20,7 +20,7 @@ export default function DesktopNavbar() {
             <div className="flex items-center gap-3 flex-shrink-0">
               <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
                 <Image
-                  src="/images/fast-meuble-logo.jpg"
+                  src="/images/fast-meuble-logo-removebg-preview.png"
                   alt="Fast Meuble"
                   width={150}
                   height={50}
