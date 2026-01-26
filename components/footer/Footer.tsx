@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/navigation';
+import Image from 'next/image';
 import { 
   FaMapMarkerAlt, 
   FaPhone, 
@@ -41,47 +42,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Company Info */}
           <div className="lg:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-3 mb-6">
-              {/* Logo Icon */}
-              <div className="relative w-10 h-10 flex items-center justify-center">
-                <svg
-                  viewBox="0 0 32 32"
-                  className="w-full h-full"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M6 6 L6 26 L26 26"
-                    stroke="#F59E0B"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                  />
-                  <path
-                    d="M6 6 L6 26"
-                    stroke="#F59E0B"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M10 6 L10 26"
-                    stroke="#F59E0B"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M6 6 L10 6"
-                    stroke="#F59E0B"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M6 26 L10 26"
-                    stroke="#F59E0B"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
-              <span className="text-white font-bold text-xl uppercase tracking-wide">FAST MEUBLE</span>
+            <Link href="/" className="inline-flex items-center mb-6 hover:opacity-80 transition-opacity">
+              <Image
+                src="/images/fast-meuble-logo-removebg-preview.png"
+                alt="Fast Meuble"
+                width={150}
+                height={50}
+                className="h-auto max-h-12"
+                priority
+              />
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               {t('companyDescription')}
