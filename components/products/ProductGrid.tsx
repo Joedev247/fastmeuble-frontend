@@ -65,7 +65,7 @@ export function ProductGrid({ products }: ProductGridProps) {
           <p className="text-gray-500">No products found. Try adjusting your filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {products.map((product) => (
             <div
               key={product.id}
@@ -104,14 +104,14 @@ export function ProductGrid({ products }: ProductGridProps) {
                       e.stopPropagation();
                       console.log('Quick view:', product.id);
                     }}
-                    className="absolute bottom-3 left-3 bg-black text-white rounded-full p-3 w-11 h-11 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-800 z-30 shadow-lg"
+                    className="absolute bottom-3 left-3 bg-black text-white rounded-full p-2.5 sm:p-3 w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-800 z-30 shadow-lg"
                     aria-label="Quick view"
                   >
-                    <FaSearch size={16} />
+                    <FaSearch size={14} className="sm:w-4 sm:h-4" />
                   </button>
 
                   {/* Right side: Vertical stack of icons in white bordered container */}
-                  <div className="absolute top-1/2 right-3 -translate-y-1/2 bg-white rounded border border-gray-200 p-1.5 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-md">
+                  <div className="absolute top-1/2 right-3 -translate-y-1/2 bg-white rounded border border-gray-200 p-1 sm:p-1.5 flex flex-col gap-1 sm:gap-1.5 opacity-0 sm:group-hover:opacity-100 transition-all duration-300 z-30 shadow-md">
                     {/* Add to Cart Icon */}
                     <button
                       onClick={(e) => handleAddToCart(e, product)}
@@ -151,7 +151,7 @@ export function ProductGrid({ products }: ProductGridProps) {
 
                 {/* Product Info */}
                 <Link href={`/shop/${product.id}`}>
-                  <div className="p-4 pt-3">
+                  <div className="p-3 sm:p-4 pt-3">
                     {/* Product Name */}
                     <h3 className="text-black text-base font-normal mb-2 line-clamp-2 min-h-[3rem]">
                       {product.name}
@@ -171,15 +171,15 @@ export function ProductGrid({ products }: ProductGridProps) {
                     <div className="flex items-center gap-2 flex-wrap">
                       {product.originalPrice ? (
                         <>
-                          <span className="text-red-500 font-bold text-lg">
+                          <span className="text-red-500 font-bold text-base sm:text-lg">
                             ${product.price.toFixed(2)}
                           </span>
-                          <span className="text-gray-400 text-sm line-through">
+                          <span className="text-gray-400 text-xs sm:text-sm line-through">
                             ${product.originalPrice.toFixed(2)}
                           </span>
                         </>
                       ) : (
-                        <span className="text-black font-bold text-lg">
+                        <span className="text-black font-bold text-base sm:text-lg">
                           ${product.price.toFixed(2)}
                         </span>
                       )}

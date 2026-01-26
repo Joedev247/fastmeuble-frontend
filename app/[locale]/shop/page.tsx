@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { ProductFilters } from '@/components/products/ProductFilters';
 import { ProductGrid } from '@/components/products/ProductGrid';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { FaFilter } from 'react-icons/fa';
 
 // Mock product data - replace with actual data fetching
 const mockProducts = [
@@ -168,11 +171,36 @@ export default function ProductsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-8">
+    <div className="min-h-screen bg-white pt-20 md:pt-24 pb-8">
       <div className="container mx-auto px-4">
-        <div className="flex gap-8">
-          {/* Left Sidebar - Filters */}
-          <aside className="w-64 flex-shrink-0">
+        {/* Mobile Filter Button */}
+        <div className="mb-4 md:hidden flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Shop</h1>
+          <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <FaFilter size={16} />
+                Filters
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-full sm:w-80 overflow-y-auto">
+              <ProductFilters
+                categories={categories}
+                selectedCategories={selectedCategories}
+                onCategoryToggle={handleCategoryToggle}
+                priceRange={priceRange}
+                onPriceRangeChange={setPriceRange}
+                selectedRating={selectedRating}
+                onRatingSelect={setSelectedRating}
+                onResetFilters={handleResetFilters}
+              />
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+          {/* Left Sidebar - Filters (Desktop) */}
+          <aside className="hidden md:block w-64 flex-shrink-0">
             <ProductFilters
               categories={categories}
               selectedCategories={selectedCategories}
@@ -186,7 +214,14 @@ export default function ProductsPage() {
           </aside>
 
           {/* Main Content - Product Grid */}
-          <main className="flex-1">
+          <main className="flex-1 min-w-0">
+            {/* Results Header */}
+            <div className="mb-4 md:mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 hidden md:block">Shop</h1>
+              <p className="text-sm text-gray-600">
+                Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+              </p>
+            </div>
             <ProductGrid products={filteredProducts} />
           </main>
         </div>

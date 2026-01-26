@@ -39,16 +39,16 @@ export function ProductFilters({
   };
 
   return (
-    <div className="bg-white border border-gray-200 Fast Meuble p-6 sticky top-4">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Filters</h2>
-        <p className="text-sm text-gray-600">Refine your search</p>
+    <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 md:sticky md:top-4">
+      <div className="mb-4 md:mb-6">
+        <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Filters</h2>
+        <p className="text-xs md:text-sm text-gray-600">Refine your search</p>
       </div>
 
       {/* Categories Section */}
-      <div className="mb-8">
-        <h3 className="text-sm font-semibold text-gray-900 mb-4">Categories</h3>
-        <div className="space-y-3">
+      <div className="mb-6 md:mb-8">
+        <h3 className="text-sm font-semibold text-gray-900 mb-3 md:mb-4">Categories</h3>
+        <div className="space-y-2 md:space-y-3 max-h-64 md:max-h-none overflow-y-auto">
           {categories.map((category) => (
             <label
               key={category.name}
@@ -70,8 +70,8 @@ export function ProductFilters({
       </div>
 
       {/* Price Range Section */}
-      <div className="mb-8">
-        <h3 className="text-sm font-semibold text-gray-900 mb-4">Price Range</h3>
+      <div className="mb-6 md:mb-8">
+        <h3 className="text-sm font-semibold text-gray-900 mb-3 md:mb-4">Price Range</h3>
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <input
@@ -138,7 +138,7 @@ export function ProductFilters({
       {/* Reset Filters Button */}
       <button
         onClick={onResetFilters}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4  transition-colors duration-200 text-sm"
+        className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded transition-colors duration-200 text-sm"
       >
         × Reset Filters
       </button>
