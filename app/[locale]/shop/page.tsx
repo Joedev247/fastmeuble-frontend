@@ -184,7 +184,7 @@ export default function ProductsPage() {
                 Filters
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-full sm:w-80 overflow-y-auto">
+            <SheetContent side="right" className="w-full sm:w-80 overflow-y-auto">
               <ProductFilters
                 categories={categories}
                 selectedCategories={selectedCategories}
