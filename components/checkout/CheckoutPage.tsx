@@ -135,7 +135,7 @@ export default function CheckoutPage() {
   };
 
   const subtotal = getTotalPrice();
-  const shipping = 0; // Free shipping or calculated
+  const shipping: number = 0; // Free shipping or calculated
   const total = subtotal + shipping;
 
   // Order Confirmation View
