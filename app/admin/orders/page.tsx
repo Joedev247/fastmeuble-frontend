@@ -32,6 +32,7 @@ import { Search, Eye, Package, Truck, CheckCircle, XCircle } from 'lucide-react'
 import { orderService, AdminOrder } from '@/lib/admin/orders';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { formatXAF } from '@/lib/utils/currency';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -44,9 +45,15 @@ export default function OrdersPage() {
     loadOrders();
   }, []);
 
-  const loadOrders = () => {
-    const allOrders = orderService.getAll();
-    setOrders(allOrders);
+  const loadOrders = async () => {
+    try {
+      const allOrders = await orderService.getAll();
+      setOrders(allOrders);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      toast.error('Failed to load orders');
+      setOrders([]);
+    }
   };
 
   const handleViewOrder = (order: AdminOrder) => {
@@ -112,7 +119,7 @@ export default function OrdersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
+        <h1 className="text-3xl font-normal text-gray-900">Orders</h1>
         <p className="text-gray-600 mt-1">
           Manage customer orders and track their status
         </p>
@@ -125,7 +132,7 @@ export default function OrdersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+                <p className="text-2xl font-normal text-gray-900">{orders.length}</p>
               </div>
               <Package className="h-8 w-8 text-amber-500" />
             </div>
@@ -136,7 +143,7 @@ export default function OrdersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">
+                <p className="text-2xl font-normal text-yellow-600">
                   {orders.filter(o => o.status === 'pending').length}
                 </p>
               </div>
@@ -149,7 +156,7 @@ export default function OrdersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Processing</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-normal text-blue-600">
                   {orders.filter(o => o.status === 'processing' || o.status === 'confirmed').length}
                 </p>
               </div>
@@ -162,8 +169,8 @@ export default function OrdersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-green-600">
-                  ${orders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + o.total, 0).toFixed(2)}
+                <p className="text-2xl font-normal text-green-600">
+                  {formatXAF(orders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + o.total, 0))}
                 </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
@@ -267,7 +274,7 @@ export default function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-semibold text-amber-500">
-                      ${order.total.toFixed(2)}
+                      {formatXAF(order.total)}
                     </TableCell>
                     <TableCell className="text-gray-600 capitalize">
                       {order.paymentMethod.replace('_', ' ')}
@@ -333,7 +340,7 @@ export default function OrdersPage() {
               {/* Customer Info */}
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="bg-gray-50 p-4  space-y-2">
                   <p><span className="font-medium">Name:</span> {selectedOrder.customer.name}</p>
                   <p><span className="font-medium">Email:</span> {selectedOrder.customer.email}</p>
                   <p><span className="font-medium">Phone:</span> {selectedOrder.customer.phone}</p>
@@ -346,7 +353,7 @@ export default function OrdersPage() {
                 <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
                 <div className="space-y-3">
                   {selectedOrder.items.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg">
+                    <div key={idx} className="flex items-center gap-4 p-3 border border-gray-200 ">
                       <div className="relative w-16 h-16 bg-gray-100 rounded overflow-hidden">
                         <Image
                           src={item.image}
@@ -361,7 +368,7 @@ export default function OrdersPage() {
                         <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                       </div>
                       <p className="font-semibold text-amber-500">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatXAF(item.price * item.quantity)}
                       </p>
                     </div>
                   ))}
@@ -371,18 +378,18 @@ export default function OrdersPage() {
               {/* Order Summary */}
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Order Summary</h3>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="bg-gray-50 p-4  space-y-2">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span className="font-medium">${selectedOrder.subtotal.toFixed(2)}</span>
+                    <span className="font-medium">{formatXAF(selectedOrder.subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping:</span>
-                    <span className="font-medium">${selectedOrder.shipping.toFixed(2)}</span>
+                    <span className="font-medium">{formatXAF(selectedOrder.shipping)}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-300">
-                    <span className="font-bold">Total:</span>
-                    <span className="font-bold text-amber-500">${selectedOrder.total.toFixed(2)}</span>
+                    <span className="font-normal">Total:</span>
+                    <span className="font-normal text-amber-500">{formatXAF(selectedOrder.total)}</span>
                   </div>
                 </div>
               </div>

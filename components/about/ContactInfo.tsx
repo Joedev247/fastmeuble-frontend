@@ -15,7 +15,7 @@ export default function ContactInfo() {
           <p className="text-amber-500 text-sm uppercase tracking-wider mb-4 font-semibold">
             {t('subtitle')}
           </p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal text-black mb-4">
             {t('title')}
           </h2>
           <div className="w-16 h-1 bg-amber-500 mx-auto mb-4"></div>
@@ -31,7 +31,7 @@ export default function ContactInfo() {
             <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
               <FaMapMarkerAlt className="text-white text-xl" />
             </div>
-            <h3 className="text-lg font-bold text-black mb-2">{t('locationTitle')}</h3>
+            <h3 className="text-lg font-normal text-black mb-2">{t('locationTitle')}</h3>
             <p className="text-gray-600 text-sm">{t('location')}</p>
           </div>
 
@@ -40,7 +40,7 @@ export default function ContactInfo() {
             <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
               <FaPhone className="text-white text-xl" />
             </div>
-            <h3 className="text-lg font-bold text-black mb-2">{t('phoneTitle')}</h3>
+            <h3 className="text-lg font-normal text-black mb-2">{t('phoneTitle')}</h3>
             <a href={`tel:${t('phone')}`} className="text-gray-600 text-sm hover:text-amber-500 transition-colors">
               {t('phone')}
             </a>
@@ -51,7 +51,7 @@ export default function ContactInfo() {
             <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
               <FaEnvelope className="text-white text-xl" />
             </div>
-            <h3 className="text-lg font-bold text-black mb-2">{t('emailTitle')}</h3>
+            <h3 className="text-lg font-normal text-black mb-2">{t('emailTitle')}</h3>
             <a href={`mailto:${t('email')}`} className="text-gray-600 text-sm hover:text-amber-500 transition-colors break-all">
               {t('email')}
             </a>
@@ -62,7 +62,7 @@ export default function ContactInfo() {
             <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
               <FaClock className="text-white text-xl" />
             </div>
-            <h3 className="text-lg font-bold text-black mb-2">{t('hoursTitle')}</h3>
+            <h3 className="text-lg font-normal text-black mb-2">{t('hoursTitle')}</h3>
             <p className="text-gray-600 text-sm">{t('hours')}</p>
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function ContactInfo() {
         <div className="text-center mt-12">
           <Link
             href="/#contact"
-            className="inline-flex items-center gap-3 bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-4 transition-colors duration-300 uppercase text-sm shadow-lg"
+            className="inline-flex items-center gap-3 bg-amber-500 hover:bg-amber-600 text-white font-normal px-8 py-4 transition-colors duration-300 uppercase text-sm shadow-lg"
           >
             <FaWhatsapp size={18} />
             <span>{t('ctaButton')}</span>

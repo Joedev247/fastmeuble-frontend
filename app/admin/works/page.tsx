@@ -32,6 +32,7 @@ import { productService, AdminProduct } from '@/lib/admin/products';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { ProductFormSheet } from '@/components/admin/ProductFormSheet';
+import { formatXAF } from '@/lib/utils/currency';
 
 export default function WorksPage() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
@@ -46,9 +47,14 @@ export default function WorksPage() {
     loadProducts();
   }, []);
 
-  const loadProducts = () => {
-    const allProducts = productService.getAll();
-    setProducts(allProducts);
+  const loadProducts = async () => {
+    try {
+      const allProducts = await productService.getAll();
+      setProducts(allProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      toast.error('Failed to load products');
+    }
   };
 
   const handleCreate = () => {
@@ -66,17 +72,23 @@ export default function WorksPage() {
     setIsDeleteSheetOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedProduct) {
-      const success = productService.delete(selectedProduct.id);
-      if (success) {
-        toast.success('Product deleted successfully');
-        loadProducts();
-      } else {
+      try {
+        const success = await productService.delete(selectedProduct.id);
+        if (success) {
+          toast.success('Product deleted successfully');
+          loadProducts();
+        } else {
+          toast.error('Failed to delete product');
+        }
+      } catch (error) {
+        console.error('Error deleting product:', error);
         toast.error('Failed to delete product');
+      } finally {
+        setIsDeleteSheetOpen(false);
+        setSelectedProduct(null);
       }
-      setIsDeleteSheetOpen(false);
-      setSelectedProduct(null);
     }
   };
 
@@ -96,7 +108,7 @@ export default function WorksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
+          <h1 className="text-3xl font-normal text-gray-900">Products</h1>
           <p className="text-gray-600 mt-1">
             Manage your product catalog
           </p>
@@ -185,7 +197,7 @@ export default function WorksPage() {
                     <TableCell className="font-medium text-gray-900">{product.name}</TableCell>
                     <TableCell className="text-gray-600">{product.category}</TableCell>
                     <TableCell className="font-semibold text-amber-500">
-                      ${product.price.toFixed(2)}
+                      {formatXAF(product.price)}
                     </TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
@@ -250,7 +262,7 @@ export default function WorksPage() {
             </SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-3 mt-6">
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 ">
               <p className="text-sm text-red-800">
                 <strong>Warning:</strong> This will permanently delete the product and all associated data. This action cannot be undone.
               </p>

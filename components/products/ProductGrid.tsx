@@ -2,10 +2,13 @@
 
 import Image from 'next/image';
 import { Link } from '@/lib/navigation';
-import { FaStar, FaRegStar, FaStarHalfAlt, FaSearch, FaShoppingBag, FaHeart, FaShareAlt } from 'react-icons/fa';
+import { FaStar, FaRegStar, FaStarHalfAlt, FaEye, FaShareAlt } from 'react-icons/fa';
 import { RiShoppingBag3Line } from 'react-icons/ri';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from '@/lib/navigation';
 import { toast } from 'sonner';
+import { formatXAF } from '@/lib/utils/currency';
 
 interface Product {
   id: string;
@@ -44,10 +47,20 @@ function renderStars(rating: number) {
 
 export function ProductGrid({ products }: ProductGridProps) {
   const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast.error('Please login to add items to cart');
+      router.push('/login');
+      return;
+    }
+    
     addToCart({
       id: product.id,
       name: product.name,
@@ -56,6 +69,60 @@ export function ProductGrid({ products }: ProductGridProps) {
       category: product.category,
     });
     toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleShareProduct = (product: Product) => {
+    const productUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/shop/${product.id}`
+      : `https://fastmeuble.com/shop/${product.id}`;
+    
+    const shareText = `Check out this amazing product: ${product.name} - ${productUrl}`;
+    
+    // Check if Web Share API is available (mobile devices)
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: `Check out ${product.name} on Fast Meuble!`,
+        url: productUrl,
+      }).catch((error) => {
+        console.log('Error sharing:', error);
+        // Fallback to clipboard
+        copyToClipboard(productUrl, product.name);
+      });
+    } else {
+      // Fallback: Copy to clipboard and show share options
+      copyToClipboard(productUrl, product.name);
+    }
+  };
+
+  const copyToClipboard = (url: string, productName: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        toast.success(`Product link copied! Share ${productName} with anyone.`);
+      }).catch(() => {
+        // Fallback for older browsers
+        fallbackCopyToClipboard(url, productName);
+      });
+    } else {
+      fallbackCopyToClipboard(url, productName);
+    }
+  };
+
+  const fallbackCopyToClipboard = (text: string, productName: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      toast.success(`Product link copied! Share ${productName} with anyone.`);
+    } catch (err) {
+      toast.error('Failed to copy link. Please copy manually.');
+    }
+    document.body.removeChild(textArea);
   };
 
   return (
@@ -86,32 +153,25 @@ export function ProductGrid({ products }: ProductGridProps) {
 
                   {/* Badges */}
                   {product.isHot && (
-                    <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 uppercase z-10">
+                    <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs font-normal px-2 py-1 uppercase z-10">
                       HOT
                     </div>
                   )}
-                  {product.discount && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 z-10">
-                      -{product.discount}
-                    </div>
-                  )}
 
-                  {/* Hover Overlay Icons */}
-                  {/* Bottom-left: Search Icon - Black circular button */}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('Quick view:', product.id);
-                    }}
-                    className="absolute bottom-3 left-3 bg-black text-white rounded-full p-2.5 sm:p-3 w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-800 z-30 shadow-lg"
-                    aria-label="Quick view"
-                  >
-                    <FaSearch size={14} className="sm:w-4 sm:h-4" />
-                  </button>
-
-                  {/* Right side: Vertical stack of icons in white bordered container */}
+                  {/* Hover Overlay Icons - Right side: Vertical stack of icons */}
                   <div className="absolute top-1/2 right-3 -translate-y-1/2 bg-white rounded border border-gray-200 p-1 sm:p-1.5 flex flex-col gap-1 sm:gap-1.5 opacity-0 sm:group-hover:opacity-100 transition-all duration-300 z-30 shadow-md">
+                    {/* View Icon - Navigate to product details */}
+                    <Link
+                      href={`/shop/${product.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="p-2.5 text-gray-700 hover:text-blue-500 hover:bg-gray-50 rounded transition-colors duration-200 flex items-center justify-center"
+                      aria-label="View product details"
+                    >
+                      <FaEye size={16} />
+                    </Link>
+
                     {/* Add to Cart Icon */}
                     <button
                       onClick={(e) => handleAddToCart(e, product)}
@@ -121,27 +181,14 @@ export function ProductGrid({ products }: ProductGridProps) {
                       <RiShoppingBag3Line size={16} />
                     </button>
 
-                    {/* Heart Icon */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Add to wishlist:', product.id);
-                      }}
-                      className="p-2.5 text-gray-700 hover:text-red-500 hover:bg-gray-50 rounded transition-colors duration-200 flex items-center justify-center"
-                      aria-label="Add to wishlist"
-                    >
-                      <FaHeart size={16} />
-                    </button>
-
                     {/* Share Icon */}
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Share:', product.id);
+                        handleShareProduct(product);
                       }}
-                      className="p-2.5 text-gray-700 hover:text-blue-500 hover:bg-gray-50 rounded transition-colors duration-200 flex items-center justify-center"
+                      className="p-2.5 text-gray-700 hover:text-green-500 hover:bg-gray-50 rounded transition-colors duration-200 flex items-center justify-center"
                       aria-label="Share product"
                     >
                       <FaShareAlt size={16} />
@@ -171,16 +218,16 @@ export function ProductGrid({ products }: ProductGridProps) {
                     <div className="flex items-center gap-2 flex-wrap">
                       {product.originalPrice ? (
                         <>
-                          <span className="text-red-500 font-bold text-base sm:text-lg">
-                            ${product.price.toFixed(2)}
+                          <span className="text-red-500 font-normal text-base sm:text-lg">
+                            {formatXAF(product.price)}
                           </span>
                           <span className="text-gray-400 text-xs sm:text-sm line-through">
-                            ${product.originalPrice.toFixed(2)}
+                            {formatXAF(product.originalPrice)}
                           </span>
                         </>
                       ) : (
-                        <span className="text-black font-bold text-base sm:text-lg">
-                          ${product.price.toFixed(2)}
+                        <span className="text-black font-normal text-base sm:text-lg">
+                          {formatXAF(product.price)}
                         </span>
                       )}
                     </div>

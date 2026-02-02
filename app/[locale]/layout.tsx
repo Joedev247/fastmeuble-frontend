@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation';
 import { locales } from '@/i18n';
 import { Toaster } from '@/components/ui/sonner';
 import { CartProvider } from '@/contexts/CartContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
+import CookieConsent from '@/components/cookies/CookieConsent';
 
 export default async function LocaleLayout({
   children,
@@ -23,12 +25,15 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <CartProvider>
-        <ConditionalLayout>
-          {children}
-        </ConditionalLayout>
-        <Toaster />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
+          <Toaster />
+          <CookieConsent />
+        </CartProvider>
+      </AuthProvider>
     </NextIntlClientProvider>
   );
 }

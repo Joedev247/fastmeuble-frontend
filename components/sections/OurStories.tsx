@@ -63,7 +63,7 @@ export default function OurStories() {
         <div className="absolute top-1/2 right-1/3 w-7 h-7 bg-green-400 opacity-20 rounded-full"></div>
         
         {/* Large faded gray text "ur" */}
-        <div className="absolute bottom-0 right-0 text-gray-200 text-[200px] md:text-[300px] font-bold opacity-30 select-none" style={{ fontFamily: 'sans-serif' }}>
+        <div className="absolute bottom-0 right-0 text-gray-200 text-[200px] md:text-[300px] font-normal opacity-30 select-none" style={{ fontFamily: 'sans-serif' }}>
           ur
         </div>
       </div>
@@ -73,12 +73,12 @@ export default function OurStories() {
           {/* Content Overlay */}
           <div className="relative z-20">
             {/* Subtitle */}
-            <p className="text-white text-sm uppercase tracking-wider mb-4 drop-shadow-md">
+            <p className="text-black text-sm uppercase tracking-wider mb-4 drop-shadow-md">
               {data.subtitle}
             </p>
 
             {/* Main Title */}
-            <h2 className="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-md">
+            <h2 className="text-black text-4xl md:text-5xl lg:text-6xl font-normal mb-6 leading-tight drop-shadow-md">
               {data.title.split(' ').slice(0, 3).join(' ')}
               <br />
               {data.title.split(' ').slice(3).join(' ')}
@@ -88,14 +88,14 @@ export default function OurStories() {
             <div className="w-16 h-1 bg-amber-500 mb-6"></div>
 
             {/* Description */}
-            <p className="text-white text-sm md:text-base leading-relaxed mb-8 max-w-lg drop-shadow-md">
+            <p className="text-black text-sm md:text-base leading-relaxed mb-8 max-w-lg drop-shadow-md">
               {data.description}
             </p>
 
             {/* About Us Button */}
             <Link
               href={data.buttonLink}
-              className="inline-flex items-center gap-3 bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-4 transition-colors duration-300 uppercase text-sm shadow-lg"
+              className="inline-flex items-center gap-3 bg-amber-500 hover:bg-amber-600 text-white font-normal px-8 py-4 transition-colors duration-300 uppercase text-sm shadow-lg"
             >
               <FaUserCog size={18} />
               <span>{data.buttonText}</span>
@@ -105,14 +105,14 @@ export default function OurStories() {
           {/* Vertical Brand Text on Right */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-8 lg:translate-x-12 hidden lg:block z-10">
             <div 
-              className="text-white font-bold text-sm md:text-base tracking-wider drop-shadow-md"
+              className="text-black font-normal text-sm md:text-base tracking-wider drop-shadow-md"
               style={{
                 writingMode: 'vertical-rl',
                 textOrientation: 'upright',
               }}
             >
               <div className="mb-2">{data.brandText.split(' ')[0]}</div>
-              <div className="w-0.5 h-4 bg-white mx-auto my-2"></div>
+              <div className="w-0.5 h-4 bg-black mx-auto my-2"></div>
               <div>{data.brandText.split(' ')[1]}</div>
             </div>
           </div>

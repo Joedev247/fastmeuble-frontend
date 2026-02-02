@@ -72,16 +72,6 @@ export default function MobileNavbar() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/blog" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold">
-                    {t('blog')}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/vendors" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold">
-                    {t('vendors')}
-                  </Link>
-                </li>
-                <li>
                   <Link href="/about" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold">
                     {t('about')}
                   </Link>

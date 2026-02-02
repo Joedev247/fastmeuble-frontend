@@ -65,7 +65,7 @@ export default function ProductBanner() {
             
             {/* Title */}
             {banner.title && (
-              <h2 className="text-black text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-md">
+              <h2 className="text-black text-3xl md:text-4xl lg:text-5xl font-normal mb-4 drop-shadow-md">
                 {banner.title}
               </h2>
             )}

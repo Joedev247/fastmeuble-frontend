@@ -3,6 +3,7 @@
 import { usePathname } from '@/lib/navigation';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
+import WhatsAppFloatButton from '@/components/whatsapp/WhatsAppFloatButton';
 import { locales } from '@/i18n';
 
 export default function ConditionalLayout({
@@ -57,6 +58,9 @@ export default function ConditionalLayout({
       {shouldShowNavbarFooter && <Navbar />}
       {children}
       {shouldShowNavbarFooter && <Footer />}
+      
+      {/* WhatsApp Floating Button - Show on all pages except admin */}
+      {shouldShowNavbarFooter && <WhatsAppFloatButton />}
     </>
   );
 }

@@ -1,4 +1,5 @@
 // Admin order management utilities and types
+import { orderAPI, Order } from '../api/orders';
 
 export interface AdminOrder {
   id: string;
@@ -29,77 +30,81 @@ export interface AdminOrder {
   updatedAt: string;
 }
 
-// Mock orders data
-let orders: AdminOrder[] = [
-  {
-    id: '1',
-    orderNumber: 'FM-12345678',
+// Helper to convert API Order to AdminOrder
+const convertToAdminOrder = (order: Order): AdminOrder => {
+  return {
+    id: order.id || order._id,
+    orderNumber: order.orderNumber,
     customer: {
-      name: 'John Doe',
-      email: 'john@example.com',
-      phone: '+237 6XX XXX XXX',
-      address: '123 Main Street',
-      city: 'Douala',
-      region: 'Littoral',
-      country: 'Cameroon',
+      name: order.customer.name,
+      email: order.customer.email,
+      phone: order.customer.phone,
+      address: order.customer.address,
+      city: order.customer.city,
+      region: order.customer.region,
+      country: order.customer.country || 'Cameroon',
     },
-    items: [
-      {
-        productId: '1',
-        productName: 'Modern Dining Chair',
-        quantity: 2,
-        price: 100.00,
-        image: '/images/category-1.jpg',
-      },
-    ],
-    subtotal: 200.00,
-    shipping: 0,
-    total: 200.00,
-    paymentMethod: 'mobile_money',
-    status: 'pending',
-    createdAt: '2024-01-20',
-    updatedAt: '2024-01-20',
-  },
-];
+    items: order.items,
+    subtotal: order.subtotal,
+    shipping: order.shipping,
+    total: order.total,
+    paymentMethod: order.paymentMethod,
+    status: order.status,
+    notes: order.notes,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+  };
+};
 
 export const orderService = {
-  getAll: (): AdminOrder[] => orders.sort((a, b) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  ),
-  
-  getById: (id: string): AdminOrder | undefined => 
-    orders.find(o => o.id === id),
-  
-  updateStatus: (id: string, status: AdminOrder['status']): AdminOrder | null => {
-    const order = orders.find(o => o.id === id);
-    if (!order) return null;
-    
-    order.status = status;
-    order.updatedAt = new Date().toISOString().split('T')[0];
-    return order;
+  getAll: async (): Promise<AdminOrder[]> => {
+    try {
+      // Fetch all orders for admin (high limit to get all orders)
+      const orders = await orderAPI.getAll({ limit: 1000 });
+      return orders.map(convertToAdminOrder).sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      return [];
+    }
   },
   
-  getStats: () => {
-    const total = orders.length;
-    const pending = orders.filter(o => o.status === 'pending').length;
-    const confirmed = orders.filter(o => o.status === 'confirmed').length;
-    const processing = orders.filter(o => o.status === 'processing').length;
-    const shipped = orders.filter(o => o.status === 'shipped').length;
-    const delivered = orders.filter(o => o.status === 'delivered').length;
-    const cancelled = orders.filter(o => o.status === 'cancelled').length;
-    const totalRevenue = orders
-      .filter(o => o.status !== 'cancelled')
-      .reduce((sum, o) => sum + o.total, 0);
-    
-    return {
-      total,
-      pending,
-      confirmed,
-      processing,
-      shipped,
-      delivered,
-      cancelled,
-      totalRevenue,
-    };
+  getById: async (id: string): Promise<AdminOrder | undefined> => {
+    try {
+      const order = await orderAPI.getById(id);
+      return convertToAdminOrder(order);
+    } catch (error) {
+      console.error('Error fetching order:', error);
+      return undefined;
+    }
+  },
+  
+  updateStatus: async (id: string, status: AdminOrder['status']): Promise<AdminOrder | null> => {
+    try {
+      const order = await orderAPI.updateStatus(id, status);
+      return convertToAdminOrder(order);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      return null;
+    }
+  },
+  
+  getStats: async () => {
+    try {
+      return await orderAPI.getStats();
+    } catch (error) {
+      console.error('Error fetching order stats:', error);
+      return {
+        total: 0,
+        pending: 0,
+        confirmed: 0,
+        processing: 0,
+        shipped: 0,
+        delivered: 0,
+        cancelled: 0,
+        totalRevenue: 0,
+      };
+    }
   },
 };

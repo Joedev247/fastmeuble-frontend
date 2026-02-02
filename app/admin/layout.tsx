@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { authAPI } from '@/lib/api/auth';
 
 function AdminContent({ children }: { children: React.ReactNode }) {
   const { state, isMobile } = useSidebar();
@@ -38,6 +41,72 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      // Don't check auth on login page
+      if (pathname === '/admin/login') {
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if token exists
+      if (!authAPI.isAuthenticated()) {
+        router.push('/admin/login');
+        setIsLoading(false);
+        return;
+      }
+
+      // Verify token is valid by checking user
+      try {
+        const user = await authAPI.getMe();
+        if (user.role !== 'admin') {
+          authAPI.logout();
+          router.push('/admin/login');
+          setIsAuthenticated(false);
+        } else {
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        // Token is invalid, redirect to login
+        authAPI.logout();
+        router.push('/admin/login');
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router, pathname]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render layout on login page
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
+  // Only render admin layout if authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <SidebarProvider defaultOpen={true}>
       <AdminSidebar />

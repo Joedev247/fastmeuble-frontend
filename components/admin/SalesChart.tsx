@@ -129,13 +129,19 @@ const chartConfig = {
     color: "hsl(var(--chart-1))",
   },
   revenue: {
-    label: "Revenue ($)",
+    label: "Revenue (FCFA)",
     color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig
 
 export function SalesChart() {
   const [timeRange, setTimeRange] = React.useState("90d")
+  const [mounted, setMounted] = React.useState(false)
+
+  // Only render on client to avoid hydration mismatch
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date)
@@ -151,6 +157,27 @@ export function SalesChart() {
     return date >= startDate
   })
 
+  // Show loading state during SSR
+  if (!mounted) {
+    return (
+      <Card className="pt-0 border border-gray-200">
+        <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+          <div className="grid flex-1 gap-1">
+            <CardTitle className="text-gray-900">Sales Overview</CardTitle>
+            <CardDescription>
+              Track orders and revenue over time
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+          <div className="aspect-auto h-[250px] w-full flex items-center justify-center">
+            <p className="text-gray-500">Loading chart...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="pt-0 border border-gray-200">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
@@ -162,19 +189,19 @@ export function SalesChart() {
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger
-            className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
+            className="hidden w-[160px]  sm:ml-auto sm:flex"
             aria-label="Select a time range"
           >
             <SelectValue placeholder="Last 3 months" />
           </SelectTrigger>
-          <SelectContent className="rounded-xl">
-            <SelectItem value="90d" className="rounded-lg">
+          <SelectContent className="">
+            <SelectItem value="90d" className="">
               Last 3 months
             </SelectItem>
-            <SelectItem value="30d" className="rounded-lg">
+            <SelectItem value="30d" className="">
               Last 30 days
             </SelectItem>
-            <SelectItem value="7d" className="rounded-lg">
+            <SelectItem value="7d" className="">
               Last 7 days
             </SelectItem>
           </SelectContent>

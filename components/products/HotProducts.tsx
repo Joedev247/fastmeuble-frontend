@@ -1,13 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations, useMessages } from 'next-intl';
 import { Link } from '@/lib/navigation';
 import Image from 'next/image';
-import { FaStar, FaStarHalfAlt, FaRegStar, FaCaretRight, FaSearch, FaHeart, FaShoppingBag, FaShareAlt } from 'react-icons/fa';
+import { FaStar, FaStarHalfAlt, FaRegStar, FaCaretRight, FaEye, FaShareAlt } from 'react-icons/fa';
 import { RiShoppingBag3Line } from 'react-icons/ri';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from '@/lib/navigation';
 import { toast } from 'sonner';
+import { productAPI } from '@/lib/api/products';
+import { formatXAF } from '@/lib/utils/currency';
+import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
 
 interface Product {
     id: string;
@@ -28,103 +33,106 @@ export default function HotProducts() {
     const t = useTranslations('components.products.HotProducts');
     const messages = useMessages();
     const { addToCart } = useCart();
+    const { isAuthenticated } = useAuth();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>('latest');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Get products from translations
-    let products: Product[] = [];
-    try {
-        const productsData = (messages as any)?.components?.products?.HotProducts?.products;
-        if (Array.isArray(productsData)) {
-            products = productsData;
+    useEffect(() => {
+        loadHotProducts();
+    }, [activeTab]);
+
+    const loadHotProducts = async () => {
+        try {
+            setIsLoading(true);
+            let productsData;
+            
+            if (activeTab === 'latest') {
+                productsData = await productAPI.getAll({ isHot: true, limit: 8, status: 'published' });
+            } else if (activeTab === 'topRating') {
+                productsData = await productAPI.getAll({ limit: 8, status: 'published' });
+                // Sort by rating
+                productsData = productsData.sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0)).slice(0, 8);
+            } else {
+                // bestSellers - could be based on reviews or orders
+                productsData = await productAPI.getAll({ limit: 8, status: 'published' });
+                productsData = productsData.sort((a: any, b: any) => (b.reviews || 0) - (a.reviews || 0)).slice(0, 8);
+            }
+
+            const formattedProducts: Product[] = productsData.map((p: any) => ({
+                id: p.id || p._id,
+                name: p.name,
+                image: p.mainImage || p.images?.[0] || '/images/category-1.jpg',
+                price: formatXAF(p.price),
+                originalPrice: p.originalPrice ? formatXAF(p.originalPrice) : undefined,
+                rating: p.rating || 0,
+                reviews: p.reviews || 0,
+                isHot: p.isHot,
+                discount: p.discount,
+                link: `/shop/${p.id || p._id}`,
+            }));
+
+            setProducts(formattedProducts);
+        } catch (error) {
+            console.error('Error loading hot products:', error);
+            toast.error('Failed to load hot products');
+        } finally {
+            setIsLoading(false);
         }
-    } catch (e) {
-        console.warn('Could not load products from translations', e);
-    }
+    };
 
-    // Fallback products if translations fail
-    if (products.length === 0) {
-        products = [
-            {
-                id: '1',
-                name: 'Chair Padded Seat',
-                image: '/images/category-1.jpg',
-                price: '$100.00',
-                rating: 4.5,
-                reviews: 2,
-                link: '/shop/chair-padded-seat',
-            },
-            {
-                id: '2',
-                name: 'Beam Decatur',
-                image: '/images/category-2.jpg',
-                price: '$30.51',
-                rating: 0,
-                reviews: 0,
-                link: '/shop/beam-decatur',
-            },
-            {
-                id: '3',
-                name: 'Briarwood Decorative',
-                image: '/images/category-3.jpg',
-                price: '$20.00',
-                rating: 0,
-                reviews: 0,
-                link: '/shop/briarwood-decorative',
-            },
-            {
-                id: '4',
-                name: 'Ceramic Canister',
-                image: '/images/discount-1.jpg',
-                price: '$27.00',
-                originalPrice: '$30.51',
-                rating: 0,
-                reviews: 0,
-                discount: '12%',
-                link: '/shop/ceramic-canister',
-            },
-            {
-                id: '5',
-                name: 'Aqua Globes',
-                image: '/images/discount-2.jpg',
-                price: '$25.00 - $30.00',
-                rating: 0,
-                reviews: 0,
-                isHot: true,
-                link: '/shop/aqua-globes',
-            },
-            {
-                id: '6',
-                name: 'CWI Gifts Wood',
-                image: '/images/slider5-1.jpg',
-                price: '$21.00',
-                originalPrice: '$30.51',
-                rating: 0,
-                reviews: 0,
-                discount: '31%',
-                link: '/shop/cwi-gifts-wood',
-            },
-            {
-                id: '7',
-                name: 'Alarm Clock',
-                image: '/images/slider5-2.jpg',
-                price: '$259.00',
-                rating: 0,
-                reviews: 0,
-                isHot: true,
-                link: '/shop/alarm-clock',
-            },
-            {
-                id: '8',
-                name: 'Casper Sleep Pillow',
-                image: '/images/slider5-3.jpg',
-                price: '$287.00',
-                rating: 4.5,
-                reviews: 1,
-                isHot: true,
-                link: '/shop/casper-sleep-pillow',
-            },
-        ];
-    }
+    const handleShareProduct = (product: Product) => {
+        const productUrl = typeof window !== 'undefined' 
+            ? `${window.location.origin}${product.link}`
+            : `https://fastmeuble.com${product.link}`;
+        
+        // Check if Web Share API is available (mobile devices)
+        if (navigator.share) {
+            navigator.share({
+                title: product.name,
+                text: `Check out ${product.name} on Fast Meuble!`,
+                url: productUrl,
+            }).catch((error) => {
+                console.log('Error sharing:', error);
+                // Fallback to clipboard
+                copyToClipboard(productUrl, product.name);
+            });
+        } else {
+            // Fallback: Copy to clipboard and show share options
+            copyToClipboard(productUrl, product.name);
+        }
+    };
+
+    const copyToClipboard = (url: string, productName: string) => {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                toast.success(`Product link copied! Share ${productName} with anyone.`);
+            }).catch(() => {
+                // Fallback for older browsers
+                fallbackCopyToClipboard(url, productName);
+            });
+        } else {
+            fallbackCopyToClipboard(url, productName);
+        }
+    };
+
+    const fallbackCopyToClipboard = (text: string, productName: string) => {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            toast.success(`Product link copied! Share ${productName} with anyone.`);
+        } catch (err) {
+            toast.error('Failed to copy link. Please copy manually.');
+        }
+        document.body.removeChild(textArea);
+    };
 
     // Render star rating
     const renderStars = (rating: number) => {
@@ -158,12 +166,12 @@ export default function HotProducts() {
                         {/* Title - Inline Flex */}
                         <div className="flex items-center gap-3">
                             <h2 className="text-black flex items-center gap-2">
-                                <span className="text-2xl md:text-3xl font-bold relative inline-block">
+                                <span className="text-2xl md:text-3xl font-normal relative inline-block">
                                     Hot
                                     {/* Orange Underline directly under "Hot" */}
                                     <span className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500"></span>
                                 </span>
-                                <span className="text-2xl md:text-3xl font-bold">Products</span>
+                                <span className="text-2xl md:text-3xl font-normal">Products</span>
                             </h2>
                         </div>
 
@@ -213,8 +221,20 @@ export default function HotProducts() {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {products.map((product) => (
+                {isLoading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                        {Array.from({ length: 8 }).map((_, index) => (
+                            <ProductCardSkeleton key={index} />
+                        ))}
+                    </div>
+                ) : products.length === 0 ? (
+                    <div className="text-center py-12">
+                        <p className="text-gray-500 text-lg mb-2">No hot products available</p>
+                        <p className="text-gray-400 text-sm">Mark products as "Hot" in the admin dashboard to display them here.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {products.map((product) => (
                         <div
                             key={product.id}
                             className="group relative block bg-white overflow-hidden"
@@ -234,38 +254,38 @@ export default function HotProducts() {
 
                                     {/* Badges */}
                                     {product.isHot && (
-                                        <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 uppercase z-10 ">
+                                        <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs font-normal px-2 py-1 uppercase z-10 ">
                                             {t('badges.hot')}
                                         </div>
                                     )}
-                                    {product.discount && (
-                                        <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 z-10 ">
-                                            -{product.discount}
-                                        </div>
-                                    )}
 
-                                    {/* Hover Overlay Icons */}
-                                    {/* Bottom-left: Search Icon - Black circular button */}
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            // Handle quick view
-                                            console.log('Quick view:', product.id);
-                                        }}
-                                        className="absolute bottom-3 left-3 bg-black text-white rounded-full p-3 w-11 h-11 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-800 z-30 shadow-lg"
-                                        aria-label="Quick view"
-                                    >
-                                        <FaSearch size={16} />
-                                    </button>
-
-                                    {/* Right side: Vertical stack of icons in white bordered container */}
+                                    {/* Hover Overlay Icons - Right side: Vertical stack of icons */}
                                     <div className="absolute top-1/2 right-3 -translate-y-1/2 bg-white rounded border border-gray-200 p-1.5 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-md">
+                                        {/* View Icon - Navigate to product details */}
+                                        <Link
+                                            href={product.link}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                            }}
+                                            className="p-2.5 text-gray-700 hover:text-blue-500 hover:bg-gray-50 rounded transition-colors duration-200 flex items-center justify-center"
+                                            aria-label="View product details"
+                                        >
+                                            <FaEye size={16} />
+                                        </Link>
+
                                         {/* Add to Cart Icon */}
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
+                                                
+                                                // Check if user is authenticated
+                                                if (!isAuthenticated) {
+                                                    toast.error('Please login to add items to cart');
+                                                    router.push('/login');
+                                                    return;
+                                                }
+                                                
                                                 const price = parseFloat(product.price.replace('$', '').replace(',', ''));
                                                 addToCart({
                                                     id: product.id,
@@ -281,29 +301,14 @@ export default function HotProducts() {
                                             <RiShoppingBag3Line size={16} />
                                         </button>
 
-                                        {/* Heart Icon */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                // Handle wishlist
-                                                console.log('Add to wishlist:', product.id);
-                                            }}
-                                            className="p-2.5 text-gray-700 hover:text-red-500 hover:bg-gray-50 rounded transition-colors duration-200 flex items-center justify-center"
-                                            aria-label="Add to wishlist"
-                                        >
-                                            <FaHeart size={16} />
-                                        </button>
-
                                         {/* Share Icon */}
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                // Handle share
-                                                console.log('Share:', product.id);
+                                                handleShareProduct(product);
                                             }}
-                                            className="p-2.5 text-gray-700 hover:text-blue-500 hover:bg-gray-50 rounded transition-colors duration-200 flex items-center justify-center"
+                                            className="p-2.5 text-gray-700 hover:text-green-500 hover:bg-gray-50 rounded transition-colors duration-200 flex items-center justify-center"
                                             aria-label="Share product"
                                         >
                                             <FaShareAlt size={16} />
@@ -333,7 +338,7 @@ export default function HotProducts() {
                                         <div className="flex items-center gap-2 flex-wrap">
                                             {product.originalPrice ? (
                                                 <>
-                                                    <span className="text-red-500 font-bold text-lg">
+                                                    <span className="text-red-500 font-normal text-lg">
                                                         {product.price}
                                                     </span>
                                                     <span className="text-gray-400 text-sm line-through">
@@ -341,7 +346,7 @@ export default function HotProducts() {
                                                     </span>
                                                 </>
                                             ) : (
-                                                <span className="text-black font-bold text-lg">
+                                                <span className="text-black font-normal text-lg">
                                                     {product.price}
                                                 </span>
                                             )}
@@ -350,8 +355,9 @@ export default function HotProducts() {
                                 </Link>
                             </div>
                         </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );

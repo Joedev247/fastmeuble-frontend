@@ -70,7 +70,7 @@ export default function LanguageSwitcher() {
         <span className="text-sm font-medium">{currentLanguage?.label}</span>
       </button>
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 bg-gray-900 rounded-lg shadow-xl min-w-[160px] z-50 overflow-hidden">
+        <div className="absolute top-full right-0 mt-2 bg-gray-900  shadow-xl min-w-[160px] z-50 overflow-hidden">
           {languageOptions.map((lang) => (
             <button
               key={lang.code}

@@ -1,16 +1,30 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/lib/navigation';
+import { Link, useRouter } from '@/lib/navigation';
 import Image from 'next/image';
 import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowLeft } from 'react-icons/fa';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { formatXAF } from '@/lib/utils/currency';
+import { openWhatsAppWithCart } from '@/lib/utils/whatsapp';
 
 export default function CartPage() {
   const t = useTranslations('components.cart.CartPage');
+  const router = useRouter();
   const { items, removeFromCart, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCart();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast.error('Please login to view your cart');
+      router.push('/login');
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   const handleRemoveItem = (productId: string, productName: string) => {
     removeFromCart(productId);
@@ -36,6 +50,17 @@ export default function CartPage() {
     }
   };
 
+  // Show loading while checking auth
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16">
@@ -43,12 +68,12 @@ export default function CartPage() {
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <FaShoppingBag className="text-gray-400" size={48} />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">Your Cart is Empty</h1>
+          <h1 className="text-3xl md:text-4xl font-normal text-black mb-4">Your Cart is Empty</h1>
           <p className="text-gray-600 mb-8">
             Looks like you haven't added any items to your cart yet.
           </p>
           <Link href="/shop" className="inline-block">
-            <Button className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-6 text-lg">
+            <Button className="bg-amber-500 hover:bg-amber-600 text-white font-normal px-8 py-6 text-lg">
               <FaArrowLeft className="mr-2" />
               Continue Shopping
             </Button>
@@ -62,7 +87,7 @@ export default function CartPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-black mb-2">Shopping Cart</h1>
+        <h1 className="text-3xl md:text-4xl font-normal text-black mb-2">Shopping Cart</h1>
         <p className="text-gray-600">
           {getTotalItems()} {getTotalItems() === 1 ? 'item' : 'items'} in your cart
         </p>
@@ -109,8 +134,8 @@ export default function CartPage() {
                     {item.category && (
                       <p className="text-sm text-gray-500 mb-2">{item.category}</p>
                     )}
-                    <p className="text-lg font-bold text-amber-500 mb-4">
-                      ${item.price.toFixed(2)}
+                    <p className="text-lg font-normal text-amber-500 mb-4">
+                      {formatXAF(item.price)}
                     </p>
 
                     {/* Quantity Controls */}
@@ -146,7 +171,7 @@ export default function CartPage() {
                     {/* Item Total */}
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <p className="text-sm text-gray-600">
-                        Subtotal: <span className="font-bold text-black">${(item.price * item.quantity).toFixed(2)}</span>
+                        Subtotal: <span className="font-normal text-black">{formatXAF(item.price * item.quantity)}</span>
                       </p>
                     </div>
                   </div>
@@ -167,13 +192,13 @@ export default function CartPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-gray-50 border border-gray-200 p-6 sticky top-24">
-            <h2 className="text-2xl font-bold text-black mb-6">Order Summary</h2>
+            <h2 className="text-2xl font-normal text-black mb-6">Order Summary</h2>
 
             {/* Summary Details */}
             <div className="space-y-4 mb-6">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal ({getTotalItems()} {getTotalItems() === 1 ? 'item' : 'items'})</span>
-                <span className="text-black font-medium">${getTotalPrice().toFixed(2)}</span>
+                <span className="text-black font-medium">{formatXAF(getTotalPrice())}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
@@ -181,15 +206,15 @@ export default function CartPage() {
               </div>
               <div className="border-t border-gray-300 pt-4">
                 <div className="flex justify-between">
-                  <span className="text-lg font-bold text-black">Total</span>
-                  <span className="text-2xl font-bold text-amber-500">${getTotalPrice().toFixed(2)}</span>
+                  <span className="text-lg font-normal text-black">Total</span>
+                  <span className="text-2xl font-normal text-amber-500">{formatXAF(getTotalPrice())}</span>
                 </div>
               </div>
             </div>
 
             {/* Checkout Button */}
             <Link href="/checkout" className="block">
-              <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-6 text-lg mb-4">
+              <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-normal py-6 text-lg mb-4">
                 Proceed to Checkout
               </Button>
             </Link>
@@ -199,12 +224,8 @@ export default function CartPage() {
               variant="outline"
               className="w-full border-2 border-green-600 text-green-600 hover:bg-green-50 py-6 text-lg font-medium"
               onClick={() => {
-                const message = encodeURIComponent(
-                  `Hello! I'm interested in purchasing these items from my cart. Can we discuss?`
-                );
-                const whatsappNumber = '237XXXXXXXXX';
-                const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
-                window.open(whatsappUrl, '_blank');
+                openWhatsAppWithCart(items);
+                toast.success('Opening WhatsApp with your cart items...');
               }}
             >
               Contact via WhatsApp

@@ -1,17 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/lib/navigation';
 import Image from 'next/image';
 import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const t = useTranslations('components.auth.LoginPage');
   const router = useRouter();
+  const { login, register, isAuthenticated } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,19 +23,51 @@ export default function LoginPage() {
   });
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSignUp) {
-      if (formData.password !== formData.confirmPassword) {
-        toast.error('Passwords do not match');
-        return;
-      }
-      toast.success('Account created successfully!');
-    } else {
-      toast.success('Logged in successfully!');
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/');
     }
-    // TODO: Implement actual authentication
-    router.push('/');
+  }, [isAuthenticated, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      if (isSignUp) {
+        // Validation
+        if (!formData.name.trim()) {
+          toast.error('Please enter your name');
+          setIsSubmitting(false);
+          return;
+        }
+        if (formData.password.length < 6) {
+          toast.error('Password must be at least 6 characters');
+          setIsSubmitting(false);
+          return;
+        }
+        if (formData.password !== formData.confirmPassword) {
+          toast.error('Passwords do not match');
+          setIsSubmitting(false);
+          return;
+        }
+        
+        await register(formData.name, formData.email, formData.password);
+        toast.success('Account created successfully!');
+      } else {
+        await login(formData.email, formData.password);
+        toast.success('Logged in successfully!');
+      }
+      
+      // Redirect to home page
+      router.push('/');
+    } catch (error: any) {
+      console.error('Auth error:', error);
+      toast.error(error.message || (isSignUp ? 'Failed to create account' : 'Failed to login'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGoogleSignIn = () => {
@@ -54,7 +89,7 @@ export default function LoginPage() {
         {/* Sofa Image */}
         <div className="relative w-full h-full">
           <Image
-            src="/images/category-2.jpg"
+            src="/images/discount-2.jpg"
             alt="Fast Meuble Sofa"
             fill
             className="object-cover opacity-90"
@@ -88,7 +123,7 @@ export default function LoginPage() {
 
           {/* Bottom Section - Headline */}
           <div className="max-w-xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-white mb-6 leading-tight">
               {t('headline')}
             </h1>
             <p className="text-white/90 text-lg md:text-xl leading-relaxed">
@@ -117,7 +152,7 @@ export default function LoginPage() {
           
           {/* Welcome Header */}
           <div className="mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl md:text-4xl font-normal text-gray-900 mb-2">
               {isSignUp ? t('welcomeSignUp') : t('welcomeBack')}
             </h2>
             <p className="text-gray-600 text-sm md:text-base">
@@ -236,9 +271,10 @@ export default function LoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-6 shop transition-colors duration-200"
+              disabled={isSubmitting}
+              className="w-full bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 shop transition-colors duration-200"
             >
-              {isSignUp ? t('signUp') : t('login')}
+              {isSubmitting ? (isSignUp ? 'Creating Account...' : 'Logging in...') : (isSignUp ? t('signUp') : t('login'))}
             </button>
 
             {/* Divider */}

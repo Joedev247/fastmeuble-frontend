@@ -21,6 +21,7 @@ import {
 import Image from 'next/image';
 import { SalesChart } from '@/components/admin/SalesChart';
 import { ProductFormSheet } from '@/components/admin/ProductFormSheet';
+import { formatXAF } from '@/lib/utils/currency';
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
@@ -31,23 +32,34 @@ export default function AdminDashboard() {
     pending: 0,
     totalRevenue: 0,
   });
+  const [categoryCount, setCategoryCount] = useState(0);
   const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
 
   useEffect(() => {
     // Load data
-    const allProducts = productService.getAll();
-    const allOrders = orderService.getAll();
-    const pStats = productService.getStats();
-    const oStats = orderService.getStats();
+    const loadData = async () => {
+      try {
+        const allProducts = await productService.getAll();
+        const allOrders = await orderService.getAll();
+        const pStats = await productService.getStats();
+        const oStats = await orderService.getStats();
+        const categories = await categoryService.getAll();
 
-    setProducts(allProducts.slice(0, 5)); // Recent 5 products
-    setOrders(allOrders.slice(0, 5)); // Recent 5 orders
-    setProductStats(pStats);
-    setOrderStats({
-      total: oStats.total,
-      pending: oStats.pending,
-      totalRevenue: oStats.totalRevenue,
-    });
+        setProducts(allProducts.slice(0, 5)); // Recent 5 products
+        setOrders(allOrders.slice(0, 5)); // Recent 5 orders
+        setProductStats(pStats);
+        setOrderStats({
+          total: oStats.total,
+          pending: oStats.pending,
+          totalRevenue: oStats.totalRevenue,
+        });
+        setCategoryCount(categories.length);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    };
+
+    loadData();
   }, []);
 
   return (
@@ -55,7 +67,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-3xl font-normal text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-1">
             Welcome back! Here's what's happening with your store.
           </p>
@@ -79,7 +91,7 @@ export default function AdminDashboard() {
             <Package className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{productStats.total}</div>
+            <div className="text-2xl font-normal text-gray-900">{productStats.total}</div>
             <p className="text-xs text-gray-500 mt-1">
               {productStats.published} published, {productStats.drafts} drafts
             </p>
@@ -94,7 +106,7 @@ export default function AdminDashboard() {
             <ShoppingCart className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{orderStats.total}</div>
+            <div className="text-2xl font-normal text-gray-900">{orderStats.total}</div>
             <p className="text-xs text-gray-500 mt-1">
               {orderStats.pending} pending orders
             </p>
@@ -109,8 +121,8 @@ export default function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              ${orderStats.totalRevenue.toFixed(2)}
+            <div className="text-2xl font-normal text-gray-900">
+              {formatXAF(orderStats.totalRevenue)}
             </div>
             <p className="text-xs text-gray-500 mt-1">
               All time revenue
@@ -126,8 +138,8 @@ export default function AdminDashboard() {
             <FileText className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {categoryService.getAll().length}
+            <div className="text-2xl font-normal text-gray-900">
+              {categoryCount}
             </div>
             <p className="text-xs text-gray-500 mt-1">
               Active categories
@@ -182,7 +194,7 @@ export default function AdminDashboard() {
                         </div>
                       </TableCell>
                       <TableCell className="font-semibold text-amber-500">
-                        ${order.total.toFixed(2)}
+                        {formatXAF(order.total)}
                       </TableCell>
                       <TableCell>
                         <span className={`text-xs px-2 py-1 rounded font-medium ${
@@ -254,7 +266,7 @@ export default function AdminDashboard() {
                         {product.category}
                       </TableCell>
                       <TableCell className="font-semibold text-amber-500">
-                        ${product.price.toFixed(2)}
+                        {formatXAF(product.price)}
                       </TableCell>
                       <TableCell>
                         <span className={`text-xs px-2 py-1 rounded font-medium ${
@@ -279,21 +291,27 @@ export default function AdminDashboard() {
         open={isProductSheetOpen}
         onOpenChange={setIsProductSheetOpen}
         productId={null}
-        onSuccess={() => {
+        onSuccess={async () => {
           // Reload data
-          const allProducts = productService.getAll();
-          const allOrders = orderService.getAll();
-          const pStats = productService.getStats();
-          const oStats = orderService.getStats();
+          try {
+            const allProducts = await productService.getAll();
+            const allOrders = await orderService.getAll();
+            const pStats = await productService.getStats();
+            const oStats = await orderService.getStats();
+            const categories = await categoryService.getAll();
 
-          setProducts(allProducts.slice(0, 5));
-          setOrders(allOrders.slice(0, 5));
-          setProductStats(pStats);
-          setOrderStats({
-            total: oStats.total,
-            pending: oStats.pending,
-            totalRevenue: oStats.totalRevenue,
-          });
+            setProducts(allProducts.slice(0, 5));
+            setOrders(allOrders.slice(0, 5));
+            setProductStats(pStats);
+            setOrderStats({
+              total: oStats.total,
+              pending: oStats.pending,
+              totalRevenue: oStats.totalRevenue,
+            });
+            setCategoryCount(categories.length);
+          } catch (error) {
+            console.error('Error reloading data:', error);
+          }
         }}
       />
     </div>

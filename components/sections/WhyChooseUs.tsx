@@ -71,7 +71,7 @@ export default function WhyChooseUs() {
           <p className="text-amber-500 text-sm uppercase tracking-wider mb-3 font-semibold">
             {t('subtitle')}
           </p>
-          <h2 className="text-black text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+          <h2 className="text-black text-3xl md:text-4xl lg:text-5xl font-normal mb-4">
             {t('title')}
           </h2>
           <div className="w-16 h-1 bg-amber-500 mx-auto mb-6"></div>
@@ -93,7 +93,7 @@ export default function WhyChooseUs() {
               </div>
 
               {/* Title */}
-              <h3 className="text-black text-xl md:text-2xl font-bold mb-3 group-hover:text-amber-500 transition-colors">
+              <h3 className="text-black text-xl md:text-2xl font-normal mb-3 group-hover:text-amber-500 transition-colors">
                 {feature.title}
               </h3>
 

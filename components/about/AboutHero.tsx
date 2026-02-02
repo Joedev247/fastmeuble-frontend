@@ -21,7 +21,7 @@ export default function AboutHero() {
             <p className="text-amber-500 text-sm uppercase tracking-wider mb-4 font-semibold">
               {t('subtitle')}
             </p>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
               {t('title')}
             </h1>
             <div className="w-16 h-1 bg-amber-500 mb-6"></div>
@@ -30,7 +30,7 @@ export default function AboutHero() {
             </p>
             <div className="flex flex-wrap gap-6">
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-amber-500 mb-1">
+                <div className="text-3xl md:text-4xl font-normal text-amber-500 mb-1">
                   {t('stat1Value')}
                 </div>
                 <div className="text-gray-600 text-sm uppercase tracking-wide">
@@ -38,7 +38,7 @@ export default function AboutHero() {
                 </div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-amber-500 mb-1">
+                <div className="text-3xl md:text-4xl font-normal text-amber-500 mb-1">
                   {t('stat2Value')}
                 </div>
                 <div className="text-gray-600 text-sm uppercase tracking-wide">
@@ -46,7 +46,7 @@ export default function AboutHero() {
                 </div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-amber-500 mb-1">
+                <div className="text-3xl md:text-4xl font-normal text-amber-500 mb-1">
                   {t('stat3Value')}
                 </div>
                 <div className="text-gray-600 text-sm uppercase tracking-wide">

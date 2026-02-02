@@ -28,7 +28,8 @@ export default function ProductForm() {
   const isEdit = pathname?.includes('/edit');
   const productId = isEdit ? (params?.id as string) : null;
 
-  const categories = categoryService.getAll();
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -47,28 +48,54 @@ export default function ProductForm() {
     status: 'draft' as 'published' | 'draft' | 'archived',
   });
 
+  // Load categories
   useEffect(() => {
-    if (isEdit && productId) {
-      const product = productService.getById(productId);
-      if (product) {
-        setFormData({
-          name: product.name,
-          category: product.category,
-          price: product.price.toString(),
-          originalPrice: product.originalPrice?.toString() || '',
-          description: product.description,
-          material: product.specifications.material,
-          dimensions: product.specifications.dimensions,
-          weight: product.specifications.weight,
-          color: product.specifications.color,
-          mainImage: product.mainImage,
-          images: product.images,
-          inStock: product.inStock,
-          isHot: product.isHot || false,
-          status: product.status,
-        });
+    const loadCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const cats = await categoryService.getAll();
+        setCategories(cats);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        setCategories([]);
+      } finally {
+        setIsLoadingCategories(false);
       }
-    }
+    };
+
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (isEdit && productId) {
+        try {
+          const product = await productService.getById(productId);
+          if (product) {
+            setFormData({
+              name: product.name,
+              category: product.category,
+              price: product.price.toString(),
+              originalPrice: product.originalPrice?.toString() || '',
+              description: product.description,
+              material: product.specifications.material,
+              dimensions: product.specifications.dimensions,
+              weight: product.specifications.weight,
+              color: product.specifications.color,
+              mainImage: product.mainImage,
+              images: product.images,
+              inStock: product.inStock,
+              isHot: product.isHot || false,
+              status: product.status,
+            });
+          }
+        } catch (error) {
+          console.error('Error loading product:', error);
+        }
+      }
+    };
+
+    loadProduct();
   }, [isEdit, productId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +128,7 @@ export default function ProductForm() {
       };
 
       if (isEdit && productId) {
-        const updated = productService.update(productId, productData as Partial<AdminProduct>);
+        const updated = await productService.update(productId, productData as Partial<AdminProduct>);
         if (updated) {
           toast.success('Product updated successfully!');
           router.push('/admin/works');
@@ -109,7 +136,7 @@ export default function ProductForm() {
           toast.error('Failed to update product');
         }
       } else {
-        const created = productService.create(productData);
+        const created = await productService.create(productData);
         toast.success('Product created successfully!');
         router.push('/admin/works');
       }
@@ -177,7 +204,7 @@ export default function ProductForm() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-normal text-gray-900">
               {isEdit ? 'Edit Product' : 'Add New Product'}
             </h1>
             <p className="text-gray-600 mt-1">
@@ -216,16 +243,23 @@ export default function ProductForm() {
                       value={formData.category}
                       onValueChange={(value) => setFormData({ ...formData, category: value })}
                       required
+                      disabled={isLoadingCategories}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
+                        <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select category"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.name}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
+                        {isLoadingCategories ? (
+                          <SelectItem value="loading" disabled>Loading categories...</SelectItem>
+                        ) : categories.length === 0 ? (
+                          <SelectItem value="no-categories" disabled>No categories available</SelectItem>
+                        ) : (
+                          categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.name}>
+                              {cat.name}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -252,7 +286,7 @@ export default function ProductForm() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price ($) *</Label>
+                    <Label htmlFor="price">Price (FCFA) *</Label>
                     <Input
                       id="price"
                       type="number"
@@ -264,7 +298,7 @@ export default function ProductForm() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="originalPrice">Original Price ($)</Label>
+                    <Label htmlFor="originalPrice">Original Price (FCFA)</Label>
                     <Input
                       id="originalPrice"
                       type="number"
@@ -371,7 +405,7 @@ export default function ProductForm() {
                 <div className="grid grid-cols-4 gap-4">
                   {formData.images.map((image, index) => (
                     <div key={index} className="relative group">
-                      <div className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 ${
+                      <div className={`relative aspect-square bg-gray-100  overflow-hidden border-2 ${
                         formData.mainImage === image ? 'border-amber-500' : 'border-gray-200'
                       }`}>
                         <Image

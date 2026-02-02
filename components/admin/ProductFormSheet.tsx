@@ -36,7 +36,8 @@ interface ProductFormSheetProps {
 export function ProductFormSheet({ open, onOpenChange, productId, onSuccess }: ProductFormSheetProps) {
   const router = useRouter();
   const isEdit = !!productId;
-  const categories = categoryService.getAll();
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -55,46 +56,76 @@ export function ProductFormSheet({ open, onOpenChange, productId, onSuccess }: P
     status: 'draft' as 'published' | 'draft' | 'archived',
   });
 
+  // Load categories
   useEffect(() => {
-    if (isEdit && productId && open) {
-      const product = productService.getById(productId);
-      if (product) {
+    const loadCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const cats = await categoryService.getAll();
+        setCategories(cats);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        toast.error('Failed to load categories');
+        setCategories([]);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    if (open) {
+      loadCategories();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (isEdit && productId && open) {
+        try {
+          const product = await productService.getById(productId);
+          if (product) {
+            setFormData({
+              name: product.name,
+              category: product.category,
+              price: product.price.toString(),
+              originalPrice: product.originalPrice?.toString() || '',
+              description: product.description,
+              material: product.specifications.material,
+              dimensions: product.specifications.dimensions,
+              weight: product.specifications.weight,
+              color: product.specifications.color,
+              mainImage: product.mainImage,
+              images: product.images,
+              inStock: product.inStock,
+              isHot: product.isHot || false,
+              status: product.status,
+            });
+          }
+        } catch (error) {
+          console.error('Error loading product:', error);
+          toast.error('Failed to load product');
+        }
+      } else if (!isEdit && open) {
+        // Reset form for new product
         setFormData({
-          name: product.name,
-          category: product.category,
-          price: product.price.toString(),
-          originalPrice: product.originalPrice?.toString() || '',
-          description: product.description,
-          material: product.specifications.material,
-          dimensions: product.specifications.dimensions,
-          weight: product.specifications.weight,
-          color: product.specifications.color,
-          mainImage: product.mainImage,
-          images: product.images,
-          inStock: product.inStock,
-          isHot: product.isHot || false,
-          status: product.status,
+          name: '',
+          category: '',
+          price: '',
+          originalPrice: '',
+          description: '',
+          material: '',
+          dimensions: '',
+          weight: '',
+          color: '',
+          mainImage: '/images/category-1.jpg',
+          images: ['/images/category-1.jpg'],
+          inStock: true,
+          isHot: false,
+          status: 'draft',
         });
       }
-    } else if (!isEdit && open) {
-      // Reset form for new product
-      setFormData({
-        name: '',
-        category: '',
-        price: '',
-        originalPrice: '',
-        description: '',
-        material: '',
-        dimensions: '',
-        weight: '',
-        color: '',
-        mainImage: '/images/category-1.jpg',
-        images: ['/images/category-1.jpg'],
-        inStock: true,
-        isHot: false,
-        status: 'draft',
-      });
-    }
+    };
+
+    loadProduct();
   }, [isEdit, productId, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,7 +158,7 @@ export function ProductFormSheet({ open, onOpenChange, productId, onSuccess }: P
       };
 
       if (isEdit && productId) {
-        const updated = productService.update(productId, productData as Partial<AdminProduct>);
+        const updated = await productService.update(productId, productData as Partial<AdminProduct>);
         if (updated) {
           toast.success('Product updated successfully!');
           onOpenChange(false);
@@ -136,7 +167,7 @@ export function ProductFormSheet({ open, onOpenChange, productId, onSuccess }: P
           toast.error('Failed to update product');
         }
       } else {
-        const created = productService.create(productData);
+        const created = await productService.create(productData);
         toast.success('Product created successfully!');
         onOpenChange(false);
         onSuccess?.();
@@ -269,16 +300,23 @@ export function ProductFormSheet({ open, onOpenChange, productId, onSuccess }: P
                     value={formData.category}
                     onValueChange={(value) => setFormData({ ...formData, category: value })}
                     required
+                    disabled={isLoadingCategories}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select category"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.name}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
+                      {isLoadingCategories ? (
+                        <SelectItem value="loading" disabled>Loading categories...</SelectItem>
+                      ) : categories.length === 0 ? (
+                        <SelectItem value="no-categories" disabled>No categories available</SelectItem>
+                      ) : (
+                        categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -305,7 +343,7 @@ export function ProductFormSheet({ open, onOpenChange, productId, onSuccess }: P
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($) *</Label>
+                  <Label htmlFor="price">Price (FCFA) *</Label>
                   <Input
                     id="price"
                     type="number"
@@ -317,7 +355,7 @@ export function ProductFormSheet({ open, onOpenChange, productId, onSuccess }: P
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="originalPrice">Original Price ($)</Label>
+                  <Label htmlFor="originalPrice">Original Price (FCFA)</Label>
                   <Input
                     id="originalPrice"
                     type="number"
@@ -412,7 +450,7 @@ export function ProductFormSheet({ open, onOpenChange, productId, onSuccess }: P
             <div className="grid grid-cols-3 gap-3">
               {formData.images.map((image, index) => (
                 <div key={index} className="relative group">
-                  <div className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 ${
+                  <div className={`relative aspect-square bg-gray-100  overflow-hidden border-2 ${
                     formData.mainImage === image ? 'border-amber-500' : 'border-gray-200'
                   }`}>
                     <Image

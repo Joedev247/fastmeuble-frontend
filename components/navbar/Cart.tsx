@@ -101,8 +101,8 @@ export default function Cart() {
               </ul>
               <div className="border-t border-gray-200 pt-4">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold text-black">Total:</span>
-                  <span className="font-bold text-amber-500">${getTotalPrice().toFixed(2)}</span>
+                  <span className="font-normal text-black">Total:</span>
+                  <span className="font-normal text-amber-500">${getTotalPrice().toFixed(2)}</span>
                 </div>
                 <Link
                   href="/cart"

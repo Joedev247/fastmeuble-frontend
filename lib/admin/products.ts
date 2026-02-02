@@ -1,4 +1,5 @@
 // Admin product management utilities and types
+import { productAPI, Product } from '../api/products';
 
 export interface AdminProduct {
   id: string;
@@ -25,73 +26,109 @@ export interface AdminProduct {
   updatedAt: string;
 }
 
-// Mock data storage (in production, this would be a database)
-let products: AdminProduct[] = [
-  {
-    id: '1',
-    name: 'Modern Dining Chair',
-    category: 'Dining Chairs',
-    price: 100.00,
-    description: 'A beautifully crafted padded seat chair that combines comfort with elegance.',
-    specifications: {
-      material: 'Wood & Fabric',
-      dimensions: '45cm x 50cm x 90cm',
-      weight: '8kg',
-      color: 'Grey',
-    },
-    images: ['/images/category-1.jpg', '/images/category-2.jpg'],
-    mainImage: '/images/category-1.jpg',
-    rating: 4.5,
-    reviews: 2,
-    inStock: true,
-    status: 'published',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-15',
-  },
-];
+// Helper to convert API Product to AdminProduct
+const convertToAdminProduct = (product: Product): AdminProduct => {
+  return {
+    id: product.id || product._id,
+    name: product.name,
+    category: typeof product.category === 'object' ? product.category.name : product.category,
+    price: product.price,
+    originalPrice: product.originalPrice,
+    description: product.description,
+    specifications: product.specifications,
+    images: product.images,
+    mainImage: product.mainImage,
+    rating: product.rating,
+    reviews: product.reviews,
+    inStock: product.inStock,
+    isHot: product.isHot,
+    discount: product.discount,
+    status: product.status,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+  };
+};
 
 export const productService = {
-  getAll: (): AdminProduct[] => products,
-  
-  getById: (id: string): AdminProduct | undefined => 
-    products.find(p => p.id === id),
-  
-  create: (product: Omit<AdminProduct, 'id' | 'createdAt' | 'updatedAt'>): AdminProduct => {
-    const newProduct: AdminProduct = {
-      ...product,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-    };
-    products.push(newProduct);
-    return newProduct;
+  getAll: async (): Promise<AdminProduct[]> => {
+    try {
+      // Fetch all products for admin (no limit, all statuses)
+      const products = await productAPI.getAll({ status: 'all', limit: 1000 });
+      return products.map(convertToAdminProduct);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    }
   },
   
-  update: (id: string, updates: Partial<AdminProduct>): AdminProduct | null => {
-    const index = products.findIndex(p => p.id === id);
-    if (index === -1) return null;
-    
-    products[index] = {
-      ...products[index],
-      ...updates,
-      updatedAt: new Date().toISOString().split('T')[0],
-    };
-    return products[index];
+  getById: async (id: string): Promise<AdminProduct | undefined> => {
+    try {
+      const product = await productAPI.getById(id);
+      return convertToAdminProduct(product);
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      return undefined;
+    }
   },
   
-  delete: (id: string): boolean => {
-    const index = products.findIndex(p => p.id === id);
-    if (index === -1) return false;
-    products.splice(index, 1);
-    return true;
+  create: async (product: Omit<AdminProduct, 'id' | 'createdAt' | 'updatedAt'>): Promise<AdminProduct> => {
+    try {
+      // Find category by name to get its ID
+      const { categoryAPI } = await import('../api/categories');
+      const categories = await categoryAPI.getAll();
+      const category = categories.find(c => c.name === product.category);
+      
+      if (!category) {
+        throw new Error('Category not found');
+      }
+
+      const created = await productAPI.create({
+        ...product,
+        category: category.id || category._id,
+      });
+      return convertToAdminProduct(created);
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw error;
+    }
   },
   
-  getStats: () => {
-    const total = products.length;
-    const published = products.filter(p => p.status === 'published').length;
-    const drafts = products.filter(p => p.status === 'draft').length;
-    const totalValue = products.reduce((sum, p) => sum + p.price, 0);
-    
-    return { total, published, drafts, totalValue };
+  update: async (id: string, updates: Partial<AdminProduct>): Promise<AdminProduct | null> => {
+    try {
+      // If category is being updated, find its ID
+      if (updates.category && typeof updates.category === 'string') {
+        const { categoryAPI } = await import('../api/categories');
+        const categories = await categoryAPI.getAll();
+        const category = categories.find(c => c.name === updates.category);
+        if (category) {
+          updates.category = category.id || category._id as any;
+        }
+      }
+
+      const updated = await productAPI.update(id, updates);
+      return convertToAdminProduct(updated);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      return null;
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await productAPI.delete(id);
+      return true;
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      return false;
+    }
+  },
+  
+  getStats: async () => {
+    try {
+      return await productAPI.getStats();
+    } catch (error) {
+      console.error('Error fetching product stats:', error);
+      return { total: 0, published: 0, drafts: 0, totalValue: 0 };
+    }
   },
 };

@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 import { useTranslations, useMessages } from 'next-intl';
-import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaPaperPlane } from 'react-icons/fa';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { contactAPI } from '@/lib/api/contact';
 
 interface ContactData {
   title: string;
   subtitle: string;
   description: string;
+  description2?: string;
   location: string;
   address: string;
   phone: string;
@@ -43,9 +48,10 @@ export default function Contact() {
       title: 'Get In Touch',
       subtitle: 'CONTACT US',
       description: 'Have a project in mind? We work on command to bring your vision to life.',
-      location: 'Bepanda, Douala - Cameroon',
-      address: 'Bepanda, Douala, Cameroon',
-      phone: '+237 XXX XXX XXX',
+      description2: 'Get in touch with us to discuss your custom furniture needs.',
+      location: 'Bepanda carrefour mala (bepanda manoua voyage), Douala - Cameroon',
+      address: 'Bepanda carrefour mala (bepanda manoua voyage), Douala, Cameroon',
+      phone: '+237 654 366 920',
       email: 'info@fastmeuble.com',
       hours: 'Mon - Sat: 8:00 AM - 6:00 PM',
       formTitle: 'Send Us a Message',
@@ -59,29 +65,38 @@ export default function Contact() {
   }
 
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: '',
+    subject: '',
     message: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus('idle');
 
-    // TODO: Implement form submission logic (API call, email service, etc.)
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', phone: '', message: '' });
+    try {
+      const messageText = formData.subject 
+        ? `Subject: ${formData.subject}\n\n${formData.message}`
+        : formData.message;
       
-      // Reset success message after 5 seconds
-      setTimeout(() => setSubmitStatus('idle'), 5000);
-    }, 1000);
+      await contactAPI.create({
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        message: messageText,
+      });
+      
+      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      setFormData({ firstName: '', lastName: '', email: '', subject: '', message: '' });
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast.error(error.message || 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -91,136 +106,184 @@ export default function Contact() {
     });
   };
 
+  // Split email and phone for multiple entries
+  const emails = data.email.split(',').map(e => e.trim());
+  const phones = data.phone.split(',').map(p => p.trim());
+
   return (
-    <section id="contact" className="py-16 md:py-24 bg-white">
+    <section id="contact" className="py-16 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <p className="text-gray-400 text-sm uppercase tracking-wider mb-4">
-            {data.subtitle}
-          </p>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4">
-            {data.title}
-          </h2>
-          <div className="w-16 h-1 bg-amber-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            {data.description}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <div>
-            <h3 className="text-2xl font-bold text-black mb-6">Contact Information</h3>
-            
-            <div className="space-y-6">
-              {/* Location */}
+        <p className="text-amber-600 text-sm mb-3 text-center">{data.subtitle}</p>
+        <h2 className="text-5xl font-semibold text-black mb-2 text-center">{data.title}</h2>
+        <p className="text-gray-600 text-lg mb-10 text-center">
+          {data.description}
+          {data.description2 && (
+            <>
+              <br />
+              {data.description2}
+            </>
+          )}
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
+          {/* Left Column - Contact Information Cards */}
+          <div className="space-y-6">
+            {/* Email Us Card */}
+            <div className="bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
-                  <FaMapMarkerAlt className="text-white" size={20} />
+                <div className="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                  <FaEnvelope className="text-amber-600" size={20} />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-black mb-1">Location</h4>
-                  <p className="text-gray-600">{data.address}</p>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-black mb-2">Email Us</h3>
+                  <div className="space-y-1">
+                    {emails.map((email, index) => (
+                      <a
+                        key={index}
+                        href={`mailto:${email}`}
+                        className="block text-gray-600 hover:text-amber-500 transition-colors text-sm"
+                      >
+                        {email}
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Phone */}
+            {/* Call Us Card */}
+            <div className="bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
-                  <FaPhone className="text-white" size={20} />
+                <div className="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                  <FaPhone className="text-amber-600" size={20} />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-black mb-1">Phone</h4>
-                  <a href={`tel:${data.phone}`} className="text-gray-600 hover:text-amber-500 transition-colors">
-                    {data.phone}
-                  </a>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-black mb-2">Call Us</h3>
+                  <div className="space-y-1">
+                    {phones.map((phone, index) => (
+                      <a
+                        key={index}
+                        href={`tel:${phone.replace(/\s/g, '')}`}
+                        className="block text-gray-600 hover:text-amber-500 transition-colors text-sm"
+                      >
+                        {phone}
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Email */}
+            {/* Visit Us Card */}
+            <div className="bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
-                  <FaEnvelope className="text-white" size={20} />
+                <div className="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                  <FaMapMarkerAlt className="text-amber-600" size={20} />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-black mb-1">Email</h4>
-                  <a href={`mailto:${data.email}`} className="text-gray-600 hover:text-amber-500 transition-colors">
-                    {data.email}
-                  </a>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-black mb-2">Visit Us</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {data.address}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              {/* Hours */}
+            {/* Business Hours Card */}
+            <div className="bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
-                  <FaClock className="text-white" size={20} />
+                <div className="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                  <FaClock className="text-amber-600" size={20} />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-black mb-1">Business Hours</h4>
-                  <p className="text-gray-600">{data.hours}</p>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-black mb-2">Business Hours</h3>
+                  <div className="space-y-1 text-gray-600 text-sm">
+                    <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
+                    <p>Saturday: 10:00 AM - 4:00 PM</p>
+                    <p>Sunday: Closed</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Contact Form */}
-          <div>
-            <h3 className="text-2xl font-bold text-black mb-2">{data.formTitle}</h3>
-            <p className="text-gray-600 mb-6">{data.formSubtitle}</p>
+          {/* Right Column - Contact Form */}
+          <div className="bg-white shadow-sm border border-gray-200 p-8">
+       
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* First Name and Last Name - Side by Side */}
+              <div className="flex flex-col sm:flex-row gap-5">
+                {/* First Name */}
+                <div className="flex-1">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                  </label>
+                  <Input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    className="w-full"
+                    placeholder="John"
+                  />
+                </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  {data.nameLabel}
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 Fast Meuble focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                />
+                {/* Last Name */}
+                <div className="flex-1">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                  </label>
+                  <Input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    className="w-full"
+                    placeholder="Doe"
+                  />
+                </div>
               </div>
 
-              {/* Email */}
+              {/* Email Address */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  {data.emailLabel}
+                  Email Address
                 </label>
-                <input
+                <Input
                   type="email"
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 Fast Meuble focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full"
+                  placeholder="john@example.com"
                 />
               </div>
 
-              {/* Phone */}
+              {/* Subject */}
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                  {data.phoneLabel}
+                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject
                 </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
+                <Input
+                  type="text"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 Fast Meuble focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full"
+                  placeholder="How can we help?"
                 />
               </div>
 
               {/* Message */}
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                  {data.messageLabel}
+                  Message
                 </label>
                 <textarea
                   id="message"
@@ -228,32 +291,45 @@ export default function Contact() {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 Fast Meuble focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                  rows={5}
+                  className="w-full px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                  placeholder="Your message..."
                 />
               </div>
 
               {/* Submit Button */}
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-4 Fast Meuble transition-colors duration-300 uppercase text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium px-6 py-3 transition-colors duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Sending...' : data.submitButton}
-              </button>
-
-              {/* Success/Error Messages */}
-              {submitStatus === 'success' && (
-                <div className="p-4 bg-green-50 border border-green-200 Fast Meuble text-green-800">
-                  Thank you! Your message has been sent. We'll get back to you soon.
-                </div>
-              )}
-              {submitStatus === 'error' && (
-                <div className="p-4 bg-red-50 border border-red-200 Fast Meuble text-red-800">
-                  Something went wrong. Please try again later.
-                </div>
-              )}
+                {isSubmitting ? (
+                  'Sending...'
+                ) : (
+                  <>
+                    <FaPaperPlane className="mr-2" size={14} />
+                    {data.submitButton}
+                  </>
+                )}
+              </Button>
             </form>
+          </div>
+        </div>
+
+        {/* Map Section */}
+        <div className="mt-12">
+          <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.8!2d9.7!3d4.05!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x107f35c8e8c8c8c9%3A0x8c8c8c8c8c8c8c8c!2sBepanda%20carrefour%20mala%20(bepanda%20manoua%20voyage)%2C%20Douala%2C%20Cameroon!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+              width="100%"
+              height="450"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full"
+              title="Fast Meuble Location - Bepanda carrefour mala (bepanda manoua voyage), Douala, Cameroon"
+            />
           </div>
         </div>
       </div>

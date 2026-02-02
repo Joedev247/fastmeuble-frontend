@@ -1,8 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTranslations, useMessages } from 'next-intl';
 import { Link } from '@/lib/navigation';
 import Image from 'next/image';
+import { featuredSectionAPI } from '@/lib/api/featuredSections';
 
 interface Banner {
   id: string;
@@ -16,38 +18,51 @@ interface Banner {
 export default function PromoBanners() {
   const t = useTranslations('components.banners.PromoBanners');
   const messages = useMessages();
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Get banners from translations or use defaults
-  let banners: Banner[] = [];
-  try {
-    const bannersData = (messages as any)?.components?.banners?.PromoBanners?.banners;
-    if (Array.isArray(bannersData)) {
-      banners = bannersData;
+  useEffect(() => {
+    loadBanners();
+  }, []);
+
+  const loadBanners = async () => {
+    try {
+      setIsLoading(true);
+      const sections = await featuredSectionAPI.getAll();
+      
+      const formattedBanners: Banner[] = sections.map((s: any) => ({
+        id: s.id || s._id,
+        discount: s.discount || '',
+        title: s.title,
+        buttonText: s.buttonText || 'Shop now',
+        image: s.image,
+        link: s.link || `/shop/${s.slug}`,
+      }));
+
+      setBanners(formattedBanners);
+    } catch (error) {
+      console.error('Error loading featured sections:', error);
+      // Show empty state - admin needs to add featured sections
+      setBanners([]);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (e) {
-    console.warn('Could not load banners from translations', e);
+  };
+
+  if (isLoading) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading featured sections...</p>
+          </div>
+        </div>
+      </section>
+    );
   }
 
-  // Fallback banners if translations fail
-  if (banners.length === 0) {
-    banners = [
-      {
-        id: '1',
-        discount: '30% OFF ALL ORDER',
-        title: 'Living Room',
-        buttonText: 'Shop now',
-        image: '/images/discount-1.jpg',
-        link: '/shop/living-room',
-      },
-      {
-        id: '2',
-        discount: '30% OFF ALL ORDER',
-        title: 'Dining Room',
-        buttonText: 'Shop now',
-        image: '/images/discount-2.jpg',
-        link: '/shop/dining-room',
-      },
-    ];
+  if (banners.length === 0 && !isLoading) {
+    return null; // Don't show section if no featured sections are configured
   }
 
   return (
@@ -86,7 +101,7 @@ export default function PromoBanners() {
                   </p>
 
                   {/* Title - large white text */}
-                  <h2 className="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+                  <h2 className="text-black text-4xl md:text-5xl lg:text-6xl font-normal mb-4 leading-tight">
                     {banner.title}
                   </h2>
 

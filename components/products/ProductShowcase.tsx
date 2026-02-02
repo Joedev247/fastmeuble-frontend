@@ -117,7 +117,7 @@ export default function ProductShowcase() {
               {product.bestSellerYear && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
                   <div 
-                    className="text-black font-bold text-sm md:text-base tracking-wider"
+                    className="text-black font-normal text-sm md:text-base tracking-wider"
                     style={{
                       writingMode: 'vertical-rl',
                       textOrientation: 'upright',
@@ -139,12 +139,12 @@ export default function ProductShowcase() {
             </p>
 
             {/* Product Name */}
-            <h1 className="text-black text-4xl md:text-5xl font-bold">
+            <h1 className="text-black text-4xl md:text-5xl font-normal">
               {product.name}
             </h1>
 
             {/* Price */}
-            <p className="text-amber-500 text-2xl md:text-3xl font-bold">
+            <p className="text-amber-500 text-2xl md:text-3xl font-normal">
               {product.price}
             </p>
 
@@ -156,7 +156,7 @@ export default function ProductShowcase() {
               <div className="flex items-center gap-2 border border-black p-2">
                 <div className="w-8 h-8 flex items-center justify-center">
                   <div className="w-6 h-6 border border-black flex items-center justify-center">
-                    <div className="text-xs font-bold">F</div>
+                    <div className="text-xs font-normal">F</div>
                   </div>
                 </div>
                 <span className="text-xs font-medium uppercase">{product.brand.name}</span>

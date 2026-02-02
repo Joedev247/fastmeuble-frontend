@@ -1,16 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from '@/lib/navigation';
 import { Link } from '@/lib/navigation';
 import Image from 'next/image';
 import { FaLock, FaCreditCard, FaMoneyBillWave, FaMobileAlt, FaCheckCircle, FaArrowLeft, FaMapMarkerAlt, FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { formatXAF } from '@/lib/utils/currency';
+import { orderAPI } from '@/lib/api/orders';
+import OrderReceipt from '@/components/orders/OrderReceipt';
 
 type PaymentMethod = 'card' | 'mobile_money' | 'cash_on_delivery';
 
@@ -38,9 +42,28 @@ interface FormData {
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, getTotalPrice, getTotalItems, clearCart } = useCart();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast.error('Please login to proceed with checkout');
+      router.push('/login');
+    }
+  }, [isAuthenticated, authLoading, router]);
+  
   const [orderPlaced, setOrderPlaced] = useState(false);
+  
+  // Redirect if cart is empty (but not if order was just placed)
+  useEffect(() => {
+    if (items.length === 0 && !authLoading && !orderPlaced) {
+      toast.error('Your cart is empty');
+      router.push('/shop');
+    }
+  }, [items.length, authLoading, orderPlaced, router]);
   const [orderNumber, setOrderNumber] = useState('');
+  const [orderData, setOrderData] = useState<any>(null);
   
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
@@ -57,26 +80,6 @@ export default function CheckoutPage() {
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-
-  // Redirect if cart is empty
-  if (items.length === 0 && !orderPlaced) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">Your Cart is Empty</h1>
-          <p className="text-gray-600 mb-8">
-            Please add items to your cart before proceeding to checkout.
-          </p>
-          <Link href="/cart">
-            <Button className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-6 text-lg">
-              <FaArrowLeft className="mr-2" />
-              Back to Cart
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
@@ -104,26 +107,69 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check authentication
+    if (!isAuthenticated) {
+      toast.error('Please login to proceed with checkout');
+      router.push('/login');
+      return;
+    }
+    
     if (!validateForm()) {
       toast.error('Please fill in all required fields correctly');
       return;
     }
 
+    if (items.length === 0) {
+      toast.error('Your cart is empty');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      const orderNum = `FM-${Date.now().toString().slice(-8)}`;
-      setOrderNumber(orderNum);
+    try {
+      // Format order data for backend
+      const orderData = {
+        items: items.map(item => ({
+          productId: item.id,
+          productName: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          image: item.image,
+        })),
+        customer: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          region: formData.region,
+          country: formData.country,
+          postalCode: formData.postalCode || '',
+        },
+        paymentMethod: formData.paymentMethod,
+        shipping: shipping,
+        notes: formData.notes || undefined,
+      };
+
+      // Create order via API
+      const createdOrder = await orderAPI.create(orderData);
+      
+      setOrderNumber(createdOrder.orderNumber);
+      setOrderData(createdOrder);
       setOrderPlaced(true);
       setIsSubmitting(false);
       toast.success('Order placed successfully!');
       
-      // Clear cart after successful order
+      // Clear cart after successful order (don't clear immediately to show receipt)
+      // Cart will be cleared when user navigates away or after showing receipt
       setTimeout(() => {
         clearCart();
-      }, 2000);
-    }, 1500);
+      }, 5000); // Increased delay to ensure receipt is shown
+    } catch (error: any) {
+      console.error('Error creating order:', error);
+      setIsSubmitting(false);
+      toast.error(error.message || 'Failed to place order. Please try again.');
+    }
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -138,47 +184,42 @@ export default function CheckoutPage() {
   const shipping: number = 0; // Free shipping or calculated
   const total = subtotal + shipping;
 
-  // Order Confirmation View
-  if (orderPlaced) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <FaCheckCircle className="text-green-500" size={64} />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">Order Confirmed!</h1>
-          <p className="text-gray-600 mb-2">
-            Thank you for your order, <strong>{formData.firstName} {formData.lastName}</strong>!
-          </p>
-          <p className="text-gray-600 mb-8">
-            Your order number is <strong className="text-amber-500">{orderNumber}</strong>
-          </p>
-          
-          <div className="bg-gray-50 border border-gray-200 p-6 mb-8 text-left">
-            <h2 className="text-xl font-bold text-black mb-4">What's Next?</h2>
-            <ul className="space-y-3 text-gray-600">
-              <li className="flex items-start gap-3">
-                <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                <span>We've sent a confirmation email to <strong>{formData.email}</strong></span>
-              </li>
-              <li className="flex items-start gap-3">
-                <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                <span>Our team will contact you at <strong>{formData.phone}</strong> within 24 hours</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                <span>We'll discuss customization options and finalize your order details</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                <span>Your furniture will be crafted and delivered to <strong>{formData.address}, {formData.city}</strong></span>
-              </li>
-            </ul>
-          </div>
+  // Order Confirmation View - Show Receipt
+  if (orderPlaced && orderData) {
+    const professionalMessage = `Thank you for choosing Fast Meuble!
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+Your order is being processed. We will contact you within 24 hours to:
+• Confirm order details
+• Discuss customization options
+• Arrange delivery`;
+
+    return (
+      <div className="pt-8">
+        <OrderReceipt
+          orderNumber={orderData.orderNumber}
+          customer={{
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            region: formData.region,
+            country: formData.country,
+            postalCode: formData.postalCode,
+          }}
+          items={orderData.items}
+          subtotal={orderData.subtotal}
+          shipping={orderData.shipping}
+          total={orderData.total}
+          createdAt={orderData.createdAt || new Date().toISOString()}
+          professionalMessage={professionalMessage}
+        />
+        
+        {/* Action Buttons */}
+        <div className="max-w-2xl mx-auto px-4 pb-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
             <Link href="/shop">
-              <Button className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-6 text-lg">
+              <Button className="bg-amber-500 hover:bg-amber-600 text-white font-normal px-8 py-6 text-lg">
                 Continue Shopping
               </Button>
             </Link>
@@ -193,22 +234,28 @@ export default function CheckoutPage() {
     );
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Link href="/cart" className="text-gray-600 hover:text-amber-500 transition-colors">
-            <FaArrowLeft />
+  // Redirect if cart is empty (but not if order was just placed)
+  if (items.length === 0 && !orderPlaced) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-3xl md:text-4xl font-normal text-black mb-4">Your Cart is Empty</h1>
+          <p className="text-gray-600 mb-8">
+            Please add items to your cart before proceeding to checkout.
+          </p>
+          <Link href="/cart">
+            <Button className="bg-amber-500 hover:bg-amber-600 text-white font-normal px-8 py-6 text-lg">
+              <FaArrowLeft className="mr-2" />
+              Back to Cart
+            </Button>
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-black">Checkout</h1>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <FaLock className="text-green-500" />
-          <span>Secure checkout • Your information is safe</span>
         </div>
       </div>
+    );
+  }
 
+  return (
+    <div className="container mx-auto px-4 py-8">
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Forms */}
@@ -219,7 +266,7 @@ export default function CheckoutPage() {
                 <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
                   <FaUser className="text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-black">Customer Information</h2>
+                <h2 className="text-2xl font-normal text-black">Customer Information</h2>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -304,7 +351,7 @@ export default function CheckoutPage() {
                 <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
                   <FaMapMarkerAlt className="text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-black">Shipping Address</h2>
+                <h2 className="text-2xl font-normal text-black">Shipping Address</h2>
               </div>
               
               <div className="mb-4">
@@ -388,7 +435,7 @@ export default function CheckoutPage() {
                 <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
                   <FaCreditCard className="text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-black">Payment Method</h2>
+                <h2 className="text-2xl font-normal text-black">Payment Method</h2>
               </div>
               
               <div className="space-y-4">
@@ -482,7 +529,7 @@ export default function CheckoutPage() {
           {/* Right Column - Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-gray-50 border border-gray-200 p-6 sticky top-24">
-              <h2 className="text-2xl font-bold text-black mb-6">Order Summary</h2>
+              <h2 className="text-2xl font-normal text-black mb-6">Order Summary</h2>
 
               {/* Order Items */}
               <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
@@ -500,11 +547,11 @@ export default function CheckoutPage() {
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-medium text-black truncate">{item.name}</h4>
                       <p className="text-xs text-gray-600">
-                        Qty: {item.quantity} × ${item.price.toFixed(2)}
+                        Qty: {item.quantity} × {formatXAF(item.price)}
                       </p>
                     </div>
                     <p className="text-sm font-semibold text-black">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatXAF(item.price * item.quantity)}
                     </p>
                   </div>
                 ))}
@@ -514,18 +561,18 @@ export default function CheckoutPage() {
               <div className="border-t border-gray-300 pt-4 space-y-3 mb-6">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal ({getTotalItems()} {getTotalItems() === 1 ? 'item' : 'items'})</span>
-                  <span className="text-black font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="text-black font-medium">{formatXAF(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
                   <span className="text-black font-medium">
-                    {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
+                    {shipping === 0 ? 'Free' : formatXAF(shipping)}
                   </span>
                 </div>
                 <div className="border-t border-gray-300 pt-4">
                   <div className="flex justify-between">
-                    <span className="text-lg font-bold text-black">Total</span>
-                    <span className="text-2xl font-bold text-amber-500">${total.toFixed(2)}</span>
+                    <span className="text-lg font-normal text-black">Total</span>
+                    <span className="text-2xl font-normal text-amber-500">{formatXAF(total)}</span>
                   </div>
                 </div>
               </div>
@@ -534,7 +581,7 @@ export default function CheckoutPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-6 text-lg mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-normal py-6 text-lg mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>

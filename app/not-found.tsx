@@ -12,7 +12,7 @@ export default function RootNotFound() {
       <div className="max-w-2xl w-full text-center">
         {/* 404 Number */}
         <div className="mb-8">
-          <h1 className="text-9xl md:text-[12rem] font-bold text-amber-500 leading-none">
+          <h1 className="text-9xl md:text-[12rem] font-normal text-amber-500 leading-none">
             404
           </h1>
           <div className="w-24 h-1 bg-amber-500 mx-auto mt-4"></div>
@@ -20,7 +20,7 @@ export default function RootNotFound() {
 
         {/* Error Message */}
         <div className="mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-normal text-gray-900 mb-4">
             Page Not Found
           </h2>
           <p className="text-lg text-gray-600 mb-2">
@@ -35,13 +35,13 @@ export default function RootNotFound() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link
             href="/en"
-            className="px-6 py-3 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition-colors"
+            className="px-6 py-3 bg-amber-500 text-white font-semibold  hover:bg-amber-600 transition-colors"
           >
             Back to Home
           </Link>
           <Link
             href="/en/shop"
-            className="px-6 py-3 border-2 border-amber-500 text-amber-500 font-semibold rounded-lg hover:bg-amber-50 transition-colors"
+            className="px-6 py-3 border-2 border-amber-500 text-amber-500 font-semibold  hover:bg-amber-50 transition-colors"
           >
             Browse Products
           </Link>

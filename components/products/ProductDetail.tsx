@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Link } from '@/lib/navigation';
 import { FaStar, FaRegStar, FaStarHalfAlt, FaWhatsapp, FaShoppingBag, FaHeart, FaShareAlt, FaCheck } from 'react-icons/fa';
@@ -12,7 +12,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from '@/lib/navigation';
 import { toast } from 'sonner';
+import { reviewAPI } from '@/lib/api/reviews';
+import { formatXAF } from '@/lib/utils/currency';
+import { openWhatsAppWithCart, openWhatsAppWithProduct } from '@/lib/utils/whatsapp';
 
 interface Product {
   id: string;
@@ -67,32 +72,16 @@ function renderStars(rating: number, size: 'sm' | 'md' = 'md') {
   return stars;
 }
 
-// Mock reviews
-const mockReviews: Review[] = [
-  {
-    id: '1',
-    userName: 'John Doe',
-    rating: 5,
-    comment: 'Excellent quality! Very comfortable and well-made. Highly recommend.',
-    date: '2024-01-15',
-  },
-  {
-    id: '2',
-    userName: 'Jane Smith',
-    rating: 4,
-    comment: 'Great product, fast delivery. Minor issue with packaging but overall satisfied.',
-    date: '2024-01-20',
-  },
-];
-
 export function ProductDetail({ product }: ProductDetailProps) {
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const [selectedImage, setSelectedImage] = useState(product.image);
   const [selectedRating, setSelectedRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [userName, setUserName] = useState('');
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -103,7 +92,37 @@ export function ProductDetail({ product }: ProductDetailProps) {
     phoneNumber: '',
   });
 
+  // Load reviews from API
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        const reviewsData = await reviewAPI.getProductReviews(product.id);
+        const formattedReviews: Review[] = reviewsData.map((r: any) => ({
+          id: r.id || r._id,
+          userName: r.userName,
+          rating: r.rating,
+          comment: r.comment,
+          date: new Date(r.createdAt).toISOString().split('T')[0],
+        }));
+        setReviews(formattedReviews);
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+        // Start with empty reviews if API fails
+        setReviews([]);
+      }
+    };
+
+    loadReviews();
+  }, [product.id]);
+
   const handleAddToCart = () => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast.error('Please login to add items to cart');
+      router.push('/login');
+      return;
+    }
+    
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: product.id,
@@ -116,45 +135,109 @@ export function ProductDetail({ product }: ProductDetailProps) {
     toast.success(`${quantity} ${product.name} added to cart!`);
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (selectedRating === 0 || !reviewText.trim() || !userName.trim()) {
-      alert('Please fill in all fields and select a rating');
+      toast.error('Please fill in all fields and select a rating');
       return;
     }
 
-    const newReview: Review = {
-      id: Date.now().toString(),
-      userName,
-      rating: selectedRating,
-      comment: reviewText,
-      date: new Date().toISOString().split('T')[0],
-    };
+    try {
+      const newReview = await reviewAPI.create({
+        productId: product.id,
+        userName,
+        rating: selectedRating,
+        comment: reviewText,
+      });
 
-    setReviews([newReview, ...reviews]);
-    setShowReviewDialog(false);
-    setSelectedRating(0);
-    setReviewText('');
-    setUserName('');
+      const formattedReview: Review = {
+        id: newReview.id || newReview._id,
+        userName: newReview.userName,
+        rating: newReview.rating,
+        comment: newReview.comment,
+        date: new Date(newReview.createdAt).toISOString().split('T')[0],
+      };
+
+      setReviews([formattedReview, ...reviews]);
+      setShowReviewDialog(false);
+      setSelectedRating(0);
+      setReviewText('');
+      setUserName('');
+      toast.success('Review submitted successfully!');
+    } catch (error: any) {
+      console.error('Error submitting review:', error);
+      toast.error(error.message || 'Failed to submit review');
+    }
   };
 
   const handlePlaceOrder = () => {
-    if (!orderDetails.phoneNumber.trim() || !orderDetails.deliveryAddress.trim()) {
-      alert('Please fill in all required fields');
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast.error('Please login to place an order');
+      router.push('/login');
       return;
     }
-    // Here you would typically send the order to your backend
-    alert('Order placed successfully! We will contact you soon.');
+    
+    if (!orderDetails.phoneNumber.trim() || !orderDetails.deliveryAddress.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    // Prepare order items: include all cart items plus this product with specified quantity
+    const orderItems: Array<{ id: string; name: string; price: number; image: string; category: string; quantity: number }> = [];
+    
+    // Add all existing cart items (excluding this product if it's already in cart)
+    items.forEach(item => {
+      if (item.id !== product.id) {
+        orderItems.push({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          category: item.category || '',
+          quantity: item.quantity,
+        });
+      }
+    });
+    
+    // Add this product with the specified quantity
+    orderItems.push({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+      quantity: orderDetails.quantity,
+    });
+    
+    // Send order to WhatsApp
+    openWhatsAppWithCart(orderItems);
     setShowOrderDialog(false);
+    toast.success('Opening WhatsApp with your order details...');
   };
 
   const handleWhatsAppContact = () => {
-    const message = encodeURIComponent(
-      `Hello! I'm interested in ${product.name} (${product.category}). Can we discuss customization options and pricing?`
-    );
-    // Update with your actual WhatsApp number (format: country code + number without + or 0)
-    const whatsappNumber = '237XXXXXXXXX'; // Replace with actual number
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
+    // If product is in cart or there are other items, send all cart items including this product
+    const productInCart = items.find(item => item.id === product.id);
+    if (productInCart || items.length > 0) {
+      // Prepare items: all cart items plus this product if not in cart
+      const allItems: Array<{ id: string; name: string; price: number; image: string; category: string; quantity: number }> = [...items];
+      
+      if (!productInCart) {
+        allItems.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          category: product.category,
+          quantity: quantity,
+        });
+      }
+      
+      openWhatsAppWithCart(allItems);
+    } else {
+      // Just send this product
+      openWhatsAppWithProduct(product.name, product.category, quantity);
+    }
   };
 
   const handlePayment = () => {
@@ -192,12 +275,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 priority
               />
               {product.isHot && (
-                <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-bold px-3 py-1.5 uppercase z-10 rounded">
+                <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-normal px-3 py-1.5 uppercase z-10 rounded">
                   HOT
                 </div>
               )}
               {product.discount && (
-                <div className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1.5 z-10 rounded">
+                <div className="absolute top-4 right-4 bg-red-500 text-white text-xs font-normal px-3 py-1.5 z-10 rounded">
                   -{product.discount}
                 </div>
               )}
@@ -229,7 +312,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <div className="space-y-6">
             <div>
               <div className="text-sm text-gray-500 mb-2">{product.category}</div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
+              <h1 className="text-3xl md:text-4xl font-normal text-gray-900 mb-4">{product.name}</h1>
 
               {/* Rating */}
               <div className="flex items-center gap-3 mb-4">
@@ -245,16 +328,16 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <div className="mb-6">
                 {product.originalPrice ? (
                   <div className="flex items-center gap-4">
-                    <span className="text-3xl font-bold text-red-500">
-                      ${product.price.toFixed(2)}
+                    <span className="text-3xl font-normal text-red-500">
+                      {formatXAF(product.price)}
                     </span>
                     <span className="text-xl text-gray-400 line-through">
-                      ${product.originalPrice.toFixed(2)}
+                      {formatXAF(product.originalPrice)}
                     </span>
                   </div>
                 ) : (
-                  <span className="text-3xl font-bold text-gray-900">
-                    ${product.price.toFixed(2)}
+                  <span className="text-3xl font-normal text-gray-900">
+                    {formatXAF(product.price)}
                   </span>
                 )}
               </div>
@@ -274,13 +357,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
             {/* Description */}
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-3">Description</h2>
+              <h2 className="text-xl font-normal text-gray-900 mb-3">Description</h2>
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
 
             {/* Specifications */}
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-3">Specifications</h2>
+              <h2 className="text-xl font-normal text-gray-900 mb-3">Specifications</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm text-gray-500">Material:</span>
@@ -334,19 +417,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 onClick={handleAddToCart}
-                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-6 text-lg"
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-normal py-6 text-lg"
               >
                 <RiShoppingBag3Line className="mr-2" size={18} />
                 Add to Cart
               </Button>
-              <Button
-                onClick={handlePayment}
-                variant="outline"
-                className="flex-1 border-2 border-gray-900 hover:bg-gray-50 py-6 text-lg font-medium"
-              >
-                <FaShoppingBag className="mr-2" />
-                Pay Now
-              </Button>
+             
               <Button
                 onClick={() => setShowOrderDialog(true)}
                 variant="outline"

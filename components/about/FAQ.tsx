@@ -56,7 +56,7 @@ export default function FAQ() {
           <p className="text-amber-500 text-sm uppercase tracking-wider mb-4 font-semibold">
             {t('subtitle')}
           </p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal text-black mb-4">
             {t('title')}
           </h2>
           <div className="w-16 h-1 bg-amber-500 mx-auto mb-4"></div>

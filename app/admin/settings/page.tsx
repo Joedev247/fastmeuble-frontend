@@ -13,9 +13,9 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState({
     // Store Information
     storeName: 'Fast Meuble',
-    storeDescription: 'Crafting excellence in custom furniture. Located in Bepanda, Douala, Cameroon.',
-    address: 'Bepanda, Douala, Cameroon',
-    phone: '+237 XXX XXX XXX',
+    storeDescription: 'Crafting excellence in custom furniture. Located in Bepanda carrefour mala (bepanda manoua voyage), Douala, Cameroon.',
+    address: 'Bepanda carrefour mala (bepanda manoua voyage), Douala, Cameroon',
+    phone: '+237 654 366 920',
     email: 'info@fastmeuble.com',
     website: 'https://fastmeuble.com',
     
@@ -26,7 +26,7 @@ export default function SettingsPage() {
     facebook: 'https://facebook.com/fastmeuble',
     instagram: 'https://instagram.com/fastmeuble',
     twitter: 'https://twitter.com/fastmeuble',
-    whatsapp: '237XXXXXXXXX',
+    whatsapp: '237654366920',
     
     // Payment
     mobileMoney: true,
@@ -38,7 +38,7 @@ export default function SettingsPage() {
     shippingRate: '0',
     
     // General
-    currency: 'USD',
+    currency: 'XAF',
     language: 'en',
   });
 
@@ -52,7 +52,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+        <h1 className="text-3xl font-normal text-gray-900">Settings</h1>
         <p className="text-gray-600 mt-1">
           Manage your store settings and preferences
         </p>

@@ -1,154 +1,112 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/lib/navigation';
 import { ProductFilters } from '@/components/products/ProductFilters';
 import { ProductGrid } from '@/components/products/ProductGrid';
+import { ProductGridSkeleton } from '@/components/products/ProductCardSkeleton';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { FaFilter } from 'react-icons/fa';
+import { productAPI } from '@/lib/api/products';
+import { categoryAPI } from '@/lib/api/categories';
+import { toast } from 'sonner';
 
-// Mock product data - replace with actual data fetching
-const mockProducts = [
-  {
-    id: '1',
-    name: 'Chair Padded Seat',
-    category: 'Dining Chairs',
-    price: 100.00,
-    rating: 4.5,
-    reviews: 2,
-    image: '/images/category-1.jpg',
-  },
-  {
-    id: '2',
-    name: 'Modern Sofa Set',
-    category: 'Sofas',
-    price: 899.99,
-    rating: 4.8,
-    reviews: 15,
-    image: '/images/category-2.jpg',
-    isHot: true,
-  },
-  {
-    id: '3',
-    name: 'Wooden Dining Table',
-    category: 'Tables',
-    price: 450.00,
-    rating: 4.7,
-    reviews: 8,
-    image: '/images/category-3.jpg',
-  },
-  {
-    id: '4',
-    name: 'Luxury Armchair',
-    category: 'Chairs',
-    price: 299.99,
-    rating: 4.6,
-    reviews: 12,
-    image: '/images/discount-1.jpg',
-    originalPrice: 349.99,
-    discount: '14%',
-  },
-  {
-    id: '5',
-    name: 'Coffee Table',
-    category: 'Tables',
-    price: 199.99,
-    rating: 4.5,
-    reviews: 6,
-    image: '/images/discount-2.jpg',
-  },
-  {
-    id: '6',
-    name: 'Sectional Sofa',
-    category: 'Sofas',
-    price: 1299.99,
-    rating: 4.9,
-    reviews: 20,
-    image: '/images/slider5-1.jpg',
-    isHot: true,
-  },
-  {
-    id: '7',
-    name: 'Bar Stool Set',
-    category: 'Chairs',
-    price: 179.99,
-    rating: 4.4,
-    reviews: 5,
-    image: '/images/slider5-2.jpg',
-  },
-  {
-    id: '8',
-    name: 'Console Table',
-    category: 'Tables',
-    price: 249.99,
-    rating: 4.6,
-    reviews: 9,
-    image: '/images/slider5-3.jpg',
-  },
-  {
-    id: '9',
-    name: 'Recliner Chair',
-    category: 'Chairs',
-    price: 399.99,
-    rating: 4.7,
-    reviews: 11,
-    image: '/images/goodvibes.jpg',
-  },
-  {
-    id: '10',
-    name: 'Dining Set',
-    category: 'Dining Sets',
-    price: 799.99,
-    rating: 4.8,
-    reviews: 18,
-    image: '/images/stories.jpg',
-    isHot: true,
-  },
-  {
-    id: '11',
-    name: 'Side Table',
-    category: 'Tables',
-    price: 89.99,
-    rating: 4.3,
-    reviews: 4,
-    image: '/images/category-1.jpg',
-  },
-  {
-    id: '12',
-    name: 'Office Chair',
-    category: 'Chairs',
-    price: 149.99,
-    rating: 4.5,
-    reviews: 7,
-    image: '/images/category-2.jpg',
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  isHot?: boolean;
+  originalPrice?: number;
+  discount?: string;
+}
 
-const categories = [
-  { name: 'Dining Chairs', count: 45 },
-  { name: 'Sofas', count: 32 },
-  { name: 'Tables', count: 58 },
-  { name: 'Chairs', count: 67 },
-  { name: 'Dining Sets', count: 25 },
-  { name: 'Office Furniture', count: 38 },
-  { name: 'Bedroom Furniture', count: 42 },
-  { name: 'Living Room', count: 55 },
-  { name: 'Outdoor Furniture', count: 28 },
-  { name: 'Storage', count: 35 },
-];
+interface Category {
+  name: string;
+  count: number;
+}
+
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Read category from URL params on mount
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategories([categoryParam]);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      // Load products
+      const productsData = await productAPI.getAll({ status: 'published' });
+      const formattedProducts: Product[] = productsData.map((p: any) => ({
+        id: p.id || p._id,
+        name: p.name,
+        category: typeof p.category === 'object' ? p.category.name : p.category,
+        price: p.price,
+        rating: p.rating || 0,
+        reviews: p.reviews || 0,
+        image: p.mainImage || p.images?.[0] || '/images/category-1.jpg',
+        isHot: p.isHot,
+        originalPrice: p.originalPrice,
+        discount: p.discount,
+      }));
+      setProducts(formattedProducts);
+
+      // Load categories
+      const categoriesData = await categoryAPI.getAll();
+      const formattedCategories: Category[] = categoriesData.map((c: any) => ({
+        name: c.name,
+        count: c.productCount || 0,
+      }));
+      setCategories(formattedCategories);
+    } catch (error: any) {
+      console.error('Error loading data:', error);
+      toast.error('Failed to load products. Please check your connection.');
+      // Don't use mock data - show empty state instead
+      setProducts([]);
+      setCategories([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCategoryToggle = (category: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
+    const newCategories = selectedCategories.includes(category)
+      ? selectedCategories.filter(c => c !== category)
+      : [...selectedCategories, category];
+    
+    setSelectedCategories(newCategories);
+    
+    // Update URL with category filter
+    const params = new URLSearchParams(searchParams.toString());
+    if (newCategories.length > 0) {
+      params.set('category', newCategories[0]); // Use first selected category
+    } else {
+      params.delete('category');
+    }
+    router.push(`/shop?${params.toString()}`);
   };
 
   const handleResetFilters = () => {
@@ -158,7 +116,7 @@ export default function ProductsPage() {
   };
 
   // Filter products based on selected filters
-  const filteredProducts = mockProducts.filter(product => {
+  const filteredProducts = products.filter(product => {
     if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
       return false;
     }
@@ -176,7 +134,7 @@ export default function ProductsPage() {
       <div className="container mx-auto px-4">
         {/* Mobile Filter Button */}
         <div className="mb-4 md:hidden flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Shop</h1>
+          <h1 className="text-2xl font-normal text-gray-900">Shop</h1>
           <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
@@ -218,12 +176,25 @@ export default function ProductsPage() {
           <main className="flex-1 min-w-0">
             {/* Results Header */}
             <div className="mb-4 md:mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 hidden md:block">Shop</h1>
+              <h1 className="text-2xl md:text-3xl font-normal text-gray-900 mb-2 hidden md:block">Shop</h1>
               <p className="text-sm text-gray-600">
-                Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+                {isLoading ? 'Loading...' : `Showing ${filteredProducts.length} ${filteredProducts.length === 1 ? 'product' : 'products'}`}
               </p>
             </div>
-            <ProductGrid products={filteredProducts} />
+            {isLoading ? (
+              <ProductGridSkeleton count={8} />
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg mb-2">No products found</p>
+                <p className="text-gray-400 text-sm">
+                  {products.length === 0 
+                    ? 'No products have been added yet. Please add products from the admin dashboard.'
+                    : 'No products match your filters. Try adjusting your search criteria.'}
+                </p>
+              </div>
+            ) : (
+              <ProductGrid products={filteredProducts} />
+            )}
           </main>
         </div>
       </div>

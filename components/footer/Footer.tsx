@@ -86,7 +86,7 @@ export default function Footer() {
                 <FaTwitter size={18} />
               </a>
               <a
-                href="https://wa.me/237XXXXXXXXX"
+                href="https://wa.me/237654366920"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-800 hover:bg-green-500 rounded-full flex items-center justify-center transition-colors duration-300"
@@ -108,7 +108,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wide">
+            <h3 className="text-white font-normal text-lg mb-6 uppercase tracking-wide">
               {t('quickLinks')}
             </h3>
             <ul className="space-y-3">
@@ -142,7 +142,7 @@ export default function Footer() {
 
           {/* Customer Service */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wide">
+            <h3 className="text-white font-normal text-lg mb-6 uppercase tracking-wide">
               {t('customerService')}
             </h3>
             <ul className="space-y-3">
@@ -176,7 +176,7 @@ export default function Footer() {
 
           {/* Contact & Newsletter */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-wide">
+            <h3 className="text-white font-normal text-lg mb-6 uppercase tracking-wide">
               {t('getInTouch')}
             </h3>
             
@@ -190,7 +190,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <FaPhone className="text-amber-500 flex-shrink-0" size={16} />
-                <a href="tel:+237XXXXXXXXX" className="text-gray-400 hover:text-amber-500 transition-colors text-sm">
+                <a href="tel:+237654366920" className="text-gray-400 hover:text-amber-500 transition-colors text-sm">
                   {t('phone')}
                 </a>
               </div>
@@ -245,15 +245,15 @@ export default function Footer() {
 
             {/* Legal Links */}
             <div className="flex flex-wrap items-center gap-4 justify-center md:justify-end">
-              <Link href="/privacy" className="text-gray-400 hover:text-amber-500 transition-colors text-sm">
+              <Link href="/privacy-policy" className="text-gray-400 hover:text-amber-500 transition-colors text-sm">
                 {t('privacyPolicy')}
               </Link>
               <span className="text-gray-600">|</span>
-              <Link href="/terms" className="text-gray-400 hover:text-amber-500 transition-colors text-sm">
+              <Link href="/terms-of-service" className="text-gray-400 hover:text-amber-500 transition-colors text-sm">
                 {t('termsOfService')}
               </Link>
               <span className="text-gray-600">|</span>
-              <Link href="/cookies" className="text-gray-400 hover:text-amber-500 transition-colors text-sm">
+              <Link href="/privacy-policy#cookies" className="text-gray-400 hover:text-amber-500 transition-colors text-sm">
                 {t('cookiePolicy')}
               </Link>
             </div>

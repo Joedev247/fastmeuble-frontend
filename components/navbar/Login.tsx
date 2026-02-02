@@ -2,12 +2,23 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { FaSignInAlt, FaUserPlus } from 'react-icons/fa';
+import { FaSignInAlt, FaUserPlus, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import { useRouter } from '@/lib/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Login() {
   const t = useTranslations('components.navbar.Login');
   const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
   const [activeMode, setActiveMode] = useState<'login' | 'signup'>('login');
 
   const handleToggle = (mode: 'login' | 'signup') => {
@@ -16,7 +27,44 @@ export default function Login() {
     router.push('/login');
   };
 
+  const handleLogout = () => {
+    logout();
+    toast.success('Logged out successfully');
+  };
 
+
+  // If user is authenticated, show user menu
+  if (isAuthenticated && user) {
+    return (
+      <div className="account">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded border border-gray-200 transition-colors">
+              <FaUser size={16} className="text-gray-700" />
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                {user.name.split(' ')[0]}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user.name}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+              <FaSignOutAlt className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
+
+  // If not authenticated, show login/signup buttons
   return (
     <>
       <div className="account">

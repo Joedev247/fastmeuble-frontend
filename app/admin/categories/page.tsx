@@ -43,9 +43,14 @@ export default function CategoriesPage() {
     loadCategories();
   }, []);
 
-  const loadCategories = () => {
-    const allCategories = categoryService.getAll();
-    setCategories(allCategories);
+  const loadCategories = async () => {
+    try {
+      const allCategories = await categoryService.getAll();
+      setCategories(allCategories);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      toast.error('Failed to load categories');
+    }
   };
 
   const handleCreate = () => {
@@ -156,7 +161,7 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
+          <h1 className="text-3xl font-normal text-gray-900">Categories</h1>
           <p className="text-gray-600 mt-1">
             Manage product categories
           </p>
@@ -198,7 +203,7 @@ export default function CategoriesPage() {
             <Card key={category.id} className="border border-gray-200 hover:shadow-lg transition-shadow">
               <CardHeader>
                 {category.image && (
-                  <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden mb-4">
+                  <div className="relative w-full h-48 bg-gray-100  overflow-hidden mb-4">
                     <Image
                       src={category.image}
                       alt={category.name}
@@ -295,7 +300,7 @@ export default function CategoriesPage() {
               />
               {formData.image ? (
                 <div className="space-y-2">
-                  <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
+                  <div className="relative w-full h-48 bg-gray-100  overflow-hidden border-2 border-gray-200">
                     <Image
                       src={formData.image}
                       alt="Category preview"
@@ -369,7 +374,7 @@ export default function CategoriesPage() {
             </SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-3 mt-6">
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 ">
               <p className="text-sm text-red-800">
                 <strong>Warning:</strong> This will permanently delete the category and all associated data. This action cannot be undone.
               </p>
