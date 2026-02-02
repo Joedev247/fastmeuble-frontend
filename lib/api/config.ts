@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://fastmeuble-backend.onrender.com/api';
 
 export const apiConfig = {
   baseURL: API_BASE_URL,
