@@ -61,13 +61,18 @@ export default function OrdersPage() {
     setIsViewDialogOpen(true);
   };
 
-  const handleStatusChange = (orderId: string, newStatus: AdminOrder['status']) => {
-    const updated = orderService.updateStatus(orderId, newStatus);
-    if (updated) {
-      toast.success(`Order status updated to ${newStatus}`);
-      loadOrders();
-    } else {
+  const handleStatusChange = async (orderId: string, newStatus: AdminOrder['status']) => {
+    try {
+      const updated = await orderService.updateStatus(orderId, newStatus);
+      if (updated) {
+        toast.success(`Order status updated to ${newStatus}`);
+        loadOrders();
+      } else {
+        toast.error('Failed to update order status');
+      }
+    } catch (error) {
       toast.error('Failed to update order status');
+      console.error('Status change error:', error);
     }
   };
 

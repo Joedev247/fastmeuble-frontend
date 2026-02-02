@@ -75,51 +75,65 @@ export default function CategoriesPage() {
     setIsDeleteSheetOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedCategory) {
-      const success = categoryService.delete(selectedCategory.id);
-      if (success) {
-        toast.success('Category deleted successfully');
-        loadCategories();
-      } else {
+      try {
+        const success = await categoryService.delete(selectedCategory.id);
+        if (success) {
+          toast.success('Category deleted successfully');
+          loadCategories();
+        } else {
+          toast.error('Failed to delete category');
+        }
+      } catch (error) {
         toast.error('Failed to delete category');
+        console.error('Delete error:', error);
       }
       setIsDeleteSheetOpen(false);
       setSelectedCategory(null);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const slug = formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-');
 
-    if (selectedCategory) {
-      const updated = categoryService.update(selectedCategory.id, {
-        name: formData.name,
-        slug,
-        description: formData.description,
-        image: formData.image,
-      });
-      if (updated) {
-        toast.success('Category updated successfully');
-        loadCategories();
+    try {
+      if (selectedCategory) {
+        const updated = await categoryService.update(selectedCategory.id, {
+          name: formData.name,
+          slug,
+          description: formData.description,
+          image: formData.image,
+        });
+        if (updated) {
+          toast.success('Category updated successfully');
+          loadCategories();
+        } else {
+          toast.error('Failed to update category');
+        }
       } else {
-        toast.error('Failed to update category');
+        const created = await categoryService.create({
+          name: formData.name,
+          slug,
+          description: formData.description,
+          image: formData.image,
+        });
+        if (created) {
+          toast.success('Category created successfully');
+          loadCategories();
+        } else {
+          toast.error('Failed to create category');
+        }
       }
-    } else {
-      const created = categoryService.create({
-        name: formData.name,
-        slug,
-        description: formData.description,
-        image: formData.image,
-      });
-      toast.success('Category created successfully');
-      loadCategories();
+      
+      setIsCategorySheetOpen(false);
+      setFormData({ name: '', slug: '', description: '', image: '' });
+    } catch (error) {
+      toast.error('An error occurred');
+      console.error('Submit error:', error);
     }
-    
-    setIsCategorySheetOpen(false);
-    setFormData({ name: '', slug: '', description: '', image: '' });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

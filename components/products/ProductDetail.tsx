@@ -220,7 +220,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
     const productInCart = items.find(item => item.id === product.id);
     if (productInCart || items.length > 0) {
       // Prepare items: all cart items plus this product if not in cart
-      const allItems: Array<{ id: string; name: string; price: number; image: string; category: string; quantity: number }> = [...items];
+      const allItems = [...items] as Array<{ id: string; name: string; price: number; image: string; category: string | undefined; quantity: number }>;
       
       if (!productInCart) {
         allItems.push({
@@ -233,7 +233,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         });
       }
       
-      openWhatsAppWithCart(allItems);
+      openWhatsAppWithCart(allItems as any);
     } else {
       // Just send this product
       openWhatsAppWithProduct(product.name, product.category, quantity);
