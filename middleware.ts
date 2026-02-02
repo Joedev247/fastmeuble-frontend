@@ -1,20 +1,22 @@
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './lib/routing.config';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 const intlMiddleware = createMiddleware(routing);
 
-export default function middleware(request: any) {
+export default function middleware(request: NextRequest) {
   try {
-    return intlMiddleware(request);
-  } catch (err) {
-    // Log and fallback to allow the request to continue rather than returning 500
-    // This prevents middleware runtime failures from bringing the whole site down.
-    // The error will be visible in server logs for debugging.
+    const response = intlMiddleware(request);
+    if (response) {
+      return response;
+    }
+  } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Middleware invocation failed:', err);
-    return NextResponse.next();
+    console.error('Middleware error:', error instanceof Error ? error.message : String(error));
   }
+  
+  // Fallback: allow request to continue without locale processing
+  return NextResponse.next();
 }
 
 export const config = {
