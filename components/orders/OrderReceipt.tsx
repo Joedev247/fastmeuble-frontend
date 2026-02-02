@@ -49,8 +49,8 @@ export default function OrderReceipt({
   const customerFirstName = customer.name.split(' ')[0];
 
   return (
-    <div className="min-h-screen bg-amber-500 opacity-20 py-4 px-4 print:py-2 print:px-0">
-      <div className="max-w-md mx-auto bg-amber-500 opacity-10 relative print:max-w-full print:mx-0 shadow-sm">
+    <div className="min-h-screen py-4 px-4 print:py-2 print:px-0">
+      <div className="max-w-md mx-auto relative print:max-w-full print:mx-0 shadow-sm">
         
 
         {/* Content with padding to account for borders */}

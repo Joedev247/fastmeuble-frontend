@@ -6,6 +6,10 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
 import CookieConsent from '@/components/cookies/CookieConsent';
 
+// Force dynamic rendering - do not prerender this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const locales = ['fr', 'en'] as const;
 export type Locale = (typeof locales)[number];
 
