@@ -1,24 +1,11 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// Mark as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default function RootPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Detect locale from browser or default to French
-    const browserLang = typeof navigator !== 'undefined' 
-      ? navigator.language?.split('-')[0]?.toLowerCase() 
-      : null;
-    
-    const locale = browserLang === 'en' ? 'en' : 'fr';
-    router.push(`/${locale}`);
-  }, [router]);
-
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p>Redirecting...</p>
-    </div>
-  );
+  // Redirect to French (default locale)
+  // The client will detect their language preference in the [locale] layout
+  redirect('/fr');
 }
