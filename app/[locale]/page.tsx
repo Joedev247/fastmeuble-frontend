@@ -7,10 +7,6 @@ import WhyChooseUs from '@/components/sections/WhyChooseUs';
 import OurStories from '@/components/sections/OurStories';
 import Contact from '@/components/sections/Contact';
 
-// Force dynamic rendering for dynamic locale param
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
